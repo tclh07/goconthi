@@ -309,7 +309,7 @@ function renderLoginModal(){
     + '<button type="button" class="auth-google-btn" onclick="authGoogleLogin()">' + gSvg + ' Đăng nhập với Google</button>'
     + divider
     + '<div class="auth-error" id="loginError"></div>'
-    + '<div class="mb-3"><label class="um-label">ID người dùng</label><input type="text" id="loginEmail" class="form-control" placeholder="@username"></div>'
+    + '<div class="mb-3"><label class="um-label">Email</label><input type="email" id="loginEmail" class="form-control" placeholder="email@example.com"></div>'
     + '<div class="mb-3"><label class="um-label">Mật khẩu</label><input type="password" id="loginPass" class="form-control" placeholder="••••••••"></div>'
     + '<div class="d-flex justify-content-between align-items-center mb-3">'
       + '<label class="auth-check"><input type="checkbox"> Ghi nhớ đăng nhập</label>'
@@ -324,7 +324,7 @@ function renderLoginModal(){
     + divider
     + '<div class="auth-error" id="registerError"></div>'
     + '<div class="mb-3"><label class="um-label">Họ và tên</label><input type="text" id="regFullName" class="form-control" placeholder="Trần Thành"></div>'
-    + '<div class="mb-3"><label class="um-label">ID người dùng</label><input type="text" id="regName" class="form-control" placeholder="@username" oninput="this.value=this.value.replace(/[^a-z0-9._]/gi,\'\').toLowerCase()"></div>'
+    + '<div class="mb-3"><label class="um-label">Tên hiển thị</label><input type="text" id="regName" class="form-control" placeholder="VD: Nguyễn Văn A"></div>'
     + '<div class="mb-3"><label class="um-label">Email</label><input type="email" id="regEmail" class="form-control" placeholder="you@gmail.com"></div>'
     + '<div class="mb-3"><label class="um-label">Mật khẩu</label><input type="password" id="regPass" class="form-control" placeholder="Tối thiểu 8 ký tự"></div>'
     + '<div class="mb-3"><label class="um-label">Nhập lại mật khẩu</label><input type="password" id="regPass2" class="form-control" placeholder="••••••••"></div>'
