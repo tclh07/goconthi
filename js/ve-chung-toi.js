@@ -59,4 +59,3 @@ window.addEventListener('scroll', function(){
 window.addEventListener('load', function(){
   animateCounters();
 });
-</script>
