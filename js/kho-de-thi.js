@@ -54,7 +54,7 @@ function renderCard(doc){
     : '';
   var fmtIcon = {pdf:'bi-file-earmark-pdf-fill',docx:'bi-file-earmark-word-fill'}[fmt]||'bi-file-earmark-fill';
 
-  return '<a class="dc2" href="chi-tiet-de.html?id='+doc.id+'">'
+  return '<div class="col-6 col-md-4 col-xl-3 reveal"><a class="dc2" href="chi-tiet-de.html?id='+doc.id+'">'
     +'<div class="dc2-cover" style="background:linear-gradient(135deg,'+grad[0]+','+grad[1]+')">'
     +thumbHtml
     +'<i class="bi '+fmtIcon+' dc2-fmt"></i>'
@@ -66,7 +66,7 @@ function renderCard(doc){
     +'<div class="dc2-foot">'
     +'<div class="dc2-stats"><span><i class="bi bi-download"></i> '+dl+'</span><span><i class="bi bi-star-fill" style="color:var(--amber)"></i> '+doc.rating+'</span></div>'
     +priceHtml+btnHtml
-    +'</div></div></a>';
+    +'</div></div></a></div>';
 }
 
 function renderGrid(docs){
@@ -80,7 +80,7 @@ function renderGrid(docs){
 
 function showEmpty(){
   var grid = document.getElementById('docGrid');
-  if(grid) grid.innerHTML = '<div class="kdt-empty"><div class="ke-icon"><i class="bi bi-search"></i></div><h5>Không tìm thấy đề thi</h5><p>Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm</p><button class="btn btn-coral" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise me-1"></i>Xoá bộ lọc</button></div>';
+  if(grid) grid.innerHTML = '<div class="col-12"><div class="kdt-empty"><div class="ke-icon"><i class="bi bi-search"></i></div><h5>Không tìm thấy đề thi</h5><p>Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm</p><button class="btn btn-coral" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise me-1"></i>Xoá bộ lọc</button></div></div>';
   document.getElementById('resultCount').textContent='0';
 }
 
