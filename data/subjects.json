@@ -1,0 +1,11 @@
+[
+  {"id": "toan",    "name": "Toán",          "icon": "bi-calculator",           "gradient": ["#1E40AF","#3B82F6"], "count": 245, "downloads": 52000},
+  {"id": "ly",      "name": "Vật lý",        "icon": "bi-lightning-charge",     "gradient": ["#0369A1","#0EA5E9"], "count": 198, "downloads": 38000},
+  {"id": "hoa",     "name": "Hoá học",        "icon": "bi-droplet-half",         "gradient": ["#0D9488","#14B8A6"], "count": 210, "downloads": 41000},
+  {"id": "sinh",    "name": "Sinh học",       "icon": "bi-tree",                 "gradient": ["#059669","#34D399"], "count": 175, "downloads": 28000},
+  {"id": "anh",     "name": "Tiếng Anh",     "icon": "bi-translate",            "gradient": ["#7C3AED","#A78BFA"], "count": 230, "downloads": 55000},
+  {"id": "van",     "name": "Ngữ văn",       "icon": "bi-pen",                  "gradient": ["#1E3A8A","#60A5FA"], "count": 120, "downloads": 22000},
+  {"id": "su",      "name": "Lịch sử",       "icon": "bi-clock-history",        "gradient": ["#6D28D9","#8B5CF6"], "count": 95,  "downloads": 15000},
+  {"id": "dia",     "name": "Địa lý",        "icon": "bi-globe-asia-australia", "gradient": ["#0284C7","#38BDF8"], "count": 88,  "downloads": 13000},
+  {"id": "gdktpl",  "name": "GD KT&PL",      "icon": "bi-bank",                 "gradient": ["#334155","#64748B"], "count": 78,  "downloads": 11000}
+]
