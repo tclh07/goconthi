@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — GócÔnThi</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="css/admin.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ===== ADMIN LOGIN GATE ===== -->
+<div id="adminLoginGate" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#0F172A,#1E3A8A);display:flex;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:24px;padding:2.5rem;width:400px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#1E40AF,#0EA5E9);display:grid;place-items:center;color:#fff;font-size:1.5rem;margin:0 auto .8rem;box-shadow:0 8px 24px -8px rgba(30,64,175,.4)"><i class="bi bi-shield-lock-fill"></i></div>
+      <h4 style="font-family:'Baloo 2';font-weight:800;margin:0 0 .2rem">Admin Panel</h4>
+      <p style="color:#64748B;font-size:.88rem;margin:0">Đăng nhập để quản trị GócÔnThi</p>
+    </div>
+    <div id="adminLoginError" style="display:none;background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;font-size:.82rem;font-weight:600;padding:.5rem .8rem;border-radius:10px;margin-bottom:.8rem;text-align:center"></div>
+    <label style="font-size:.82rem;font-weight:600;color:#64748B;display:block;margin-bottom:.3rem">Tài khoản Admin</label>
+    <input type="text" id="adminUser" placeholder="admin" style="width:100%;padding:.7rem 1rem;border:2px solid #E2E8F0;border-radius:12px;font-size:.95rem;font-family:inherit;outline:none;transition:.2s;margin-bottom:.8rem" onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#E2E8F0'">
+    <label style="font-size:.82rem;font-weight:600;color:#64748B;display:block;margin-bottom:.3rem">Mật khẩu</label>
+    <input type="password" id="adminPass" placeholder="••••••••" style="width:100%;padding:.7rem 1rem;border:2px solid #E2E8F0;border-radius:12px;font-size:.95rem;font-family:inherit;outline:none;transition:.2s;margin-bottom:1.2rem" onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#E2E8F0'" onkeydown="if(event.key==='Enter')adminLogin()">
+    <button onclick="adminLogin()" style="width:100%;padding:.75rem;border:none;background:linear-gradient(135deg,#1E40AF,#2563EB);border-radius:14px;font-weight:700;font-size:.95rem;color:#fff;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px -4px rgba(30,64,175,.4);transition:.2s"><i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập</button>
+    <p style="text-align:center;margin:.8rem 0 0;font-size:.78rem;color:#94A3B8"><i class="bi bi-lock-fill"></i> Chỉ dành cho quản trị viên</p>
+  </div>
+</div>
+
+
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo"><i class="bi bi-book-half"></i></div>
+    <h4>Góc<span>ÔnThi</span></h4>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-label">Tổng quan</div>
+    <ul class="sb-nav">
+      <li><a href="#" class="active" data-tab="dashboard"><i class="bi bi-grid-1x2-fill"></i> <span>Dashboard</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-label">Nội dung</div>
+    <ul class="sb-nav">
+      <li><a href="#" data-tab="documents"><i class="bi bi-file-earmark-text-fill"></i> <span>Đề thi</span></a></li>
+      <li><a href="#" data-tab="posts"><i class="bi bi-pen-fill"></i> <span>Bài viết</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-label">Kinh doanh</div>
+    <ul class="sb-nav">
+      <li><a href="#" data-tab="orders"><i class="bi bi-receipt"></i> <span>Đơn hàng</span> <span class="sb-badge" id="pendingCount" style="display:none">0</span></a></li>
+      <li><a href="#" data-tab="reports"><i class="bi bi-flag-fill"></i> <span>Báo cáo sự cố</span> <span class="sb-badge" id="reportCount" style="display:none;background:#EF4444">0</span></a></li>
+    </ul>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-label">Hệ thống</div>
+    <ul class="sb-nav">
+      <li><a href="#" data-tab="settings"><i class="bi bi-gear-fill"></i> <span>Cài đặt</span></a></li>
+    </ul>
+  </div>
+
+  <div style="padding:.5rem .8rem">
+    <button onclick="adminLogout()" style="width:100%;padding:.55rem;border:1.5px solid rgba(239,68,68,.2);background:rgba(239,68,68,.05);border-radius:10px;font-size:.82rem;font-weight:600;color:#DC2626;cursor:pointer;font-family:inherit;transition:.2s"><i class="bi bi-box-arrow-right me-1"></i>Đăng xuất Admin</button>
+  </div>
+  <div class="sb-footer">
+    <a href="index.html"><i class="bi bi-box-arrow-left"></i> <span>Về trang chủ</span></a>
+  </div>
+</aside>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1 id="pageTitle">Dashboard</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-search">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Tìm kiếm..." id="globalSearch">
+      </div>
+      <div class="admin-ava" title="Admin">AD</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ============================= -->
+    <!-- TAB: DASHBOARD                -->
+    <!-- ============================= -->
+    <div id="tab-dashboard">
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:linear-gradient(135deg,var(--coral),var(--amber))"><i class="bi bi-file-earmark-text-fill"></i></div>
+          <div class="stat-body">
+            <div class="stat-num" id="statDocs">0</div>
+            <div class="stat-label">Đề thi đã đăng</div>
+            <div class="stat-change up"><i class="bi bi-arrow-up-short"></i> +3 tuần này</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:linear-gradient(135deg,var(--teal),var(--sky))"><i class="bi bi-download"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">73K</div>
+            <div class="stat-label">Lượt tải tổng</div>
+            <div class="stat-change up"><i class="bi bi-arrow-up-short"></i> +2.4K tháng</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:linear-gradient(135deg,var(--grape),var(--sky))"><i class="bi bi-receipt"></i></div>
+          <div class="stat-body">
+            <div class="stat-num" id="statOrders">28</div>
+            <div class="stat-label">Đơn hàng tháng này</div>
+            <div class="stat-change up"><i class="bi bi-arrow-up-short"></i> +12%</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:linear-gradient(135deg,var(--amber),var(--coral))"><i class="bi bi-wallet2"></i></div>
+          <div class="stat-body">
+            <div class="stat-num">1.2M</div>
+            <div class="stat-label">Doanh thu tháng</div>
+            <div class="stat-change up"><i class="bi bi-arrow-up-short"></i> +18%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <!-- Đơn hàng treo / cần xử lý -->
+        <div class="dash-widget">
+          <div class="dash-widget-header">
+            <h6><i class="bi bi-bell" style="color:var(--amber)"></i> Đơn chờ duyệt</h6>
+            <a href="#" class="btn-teal" onclick="showTab('orders');return false">Xem tất cả →</a>
+          </div>
+          <div id="dashPendingOrders"></div>
+        </div>
+        <!-- Đề thi gần đây -->
+        <div class="dash-widget">
+          <div class="dash-widget-header">
+            <h6><i class="bi bi-clock-history" style="color:var(--coral)"></i> Đề thi mới thêm</h6>
+            <a href="#" class="btn-teal" onclick="showTab('documents');return false">Quản lý →</a>
+          </div>
+          <div id="dashRecentDocs"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- TAB: DOCUMENTS (Đề thi)       -->
+    <!-- ============================= -->
+    <div id="tab-documents" style="display:none">
+
+      <!-- Form thêm/sửa đề -->
+      <div class="form-section" id="docForm">
+        <h5><i class="bi bi-plus-circle-fill" style="color:var(--coral)"></i> <span id="docFormTitle">Thêm đề thi mới</span></h5>
+        <div class="fg">
+          <div class="fg-full">
+            <label class="fl">Tên đề thi *</label>
+            <input class="fi" id="fTitle" placeholder="Vd: Đề thi thử Toán — Sở GD&ĐT Hà Nội 2026">
+          </div>
+          <div>
+            <label class="fl">Môn thi *</label>
+            <select class="fsel" id="fSubject">
+              <option value="">Chọn môn...</option>
+              <option value="toan">Toán</option><option value="ly">Vật lý</option>
+              <option value="hoa">Hoá học</option><option value="sinh">Sinh học</option>
+              <option value="anh">Tiếng Anh</option><option value="van">Ngữ văn</option>
+              <option value="su">Lịch sử</option><option value="dia">Địa lý</option>
+              <option value="gdktpl">GD KT&PL</option>
+            </select>
+          </div>
+          <div>
+            <label class="fl">Loại đề *</label>
+            <select class="fsel" id="fType">
+              <option value="">Chọn loại...</option>
+              <option value="so">Đề thi thử Sở GD&ĐT</option>
+              <option value="dungsai">Đề đúng sai</option>
+              <option value="minhhoa">Đề minh hoạ Bộ GD&ĐT</option>
+              <option value="tomtat">Tóm tắt kiến thức</option>
+            </select>
+          </div>
+          <div>
+            <label class="fl">Nguồn / Sở</label>
+            <input class="fi" id="fSource" placeholder="Vd: Sở Hà Nội, Bộ GD&ĐT...">
+          </div>
+          <div>
+            <label class="fl">Mã đề thi *</label>
+            <input class="fi" id="fDocCode" placeholder="Vd: TOANHN01" style="text-transform:uppercase" maxlength="20">
+            <div class="fi-hint">Chữ + số, không dấu — dùng cho nội dung CK</div>
+          </div>
+          <div>
+            <label class="fl">Năm</label>
+            <select class="fsel" id="fYear">
+              <option value="2026" selected>2026</option>
+              <option value="2025">2025</option><option value="2024">2024</option>
+            </select>
+          </div>
+          <div>
+            <label class="fl">Số trang</label>
+            <input class="fi" id="fPages" type="number" placeholder="12" min="1">
+          </div>
+          <div>
+            <label class="fl">Số câu hỏi</label>
+            <input class="fi" id="fQuestions" type="number" placeholder="50" min="1">
+          </div>
+          <div>
+            <label class="fl">Giá bán</label>
+            <div class="price-toggle">
+              <button class="active-free" onclick="setPrice(this,'free')"><i class="bi bi-unlock"></i> Miễn phí</button>
+              <button onclick="setPrice(this,'premium')"><i class="bi bi-gem"></i> Có phí</button>
+            </div>
+            <input class="fi" id="fPrice" type="number" placeholder="0" value="0" style="margin-top:.4rem" min="0" step="1000">
+          </div>
+          <div>
+            <label class="fl">Mô tả ngắn</label>
+            <textarea class="fta" id="fDesc" placeholder="Tóm tắt nội dung đề thi, đặc điểm nổi bật..."></textarea>
+          </div>
+          <div>
+            <label class="fl">Ảnh bìa / Thumbnail</label>
+            <label class="fz" for="fThumb">
+              <i class="bi bi-image"></i>
+              <p>Tải ảnh bìa đề thi</p>
+              <p style="font-size:.73rem;color:var(--ink-faint)">JPG, PNG — tối đa 2MB</p>
+              <input type="file" id="fThumb" hidden accept="image/*">
+            </label>
+            <div class="fz-preview" id="fThumbPreview"></div>
+            <div class="fz-name" id="fThumbName"></div>
+          </div>
+          <div>
+            <label class="fl">File xem trước (preview)</label>
+            <label class="fz" for="fPreviewFile">
+              <i class="bi bi-eye"></i>
+              <p>File preview (ảnh trang đầu)</p>
+              <p style="font-size:.73rem;color:var(--ink-faint)">JPG, PNG — hiện ở modal xem trước</p>
+              <input type="file" id="fPreviewFile" hidden accept="image/*">
+            </label>
+            <div class="fz-name" id="fPreviewFileName"></div>
+          </div>
+          <div class="fg-full">
+            <label class="fl">File đề thi *</label>
+            <label class="fz" for="fFile">
+              <i class="bi bi-cloud-arrow-up-fill"></i>
+              <p>Kéo file vào đây hoặc <strong>chọn từ máy tính</strong></p>
+              <p style="font-size:.73rem;color:var(--ink-faint)">PDF, DOCX — tối đa 50MB</p>
+              <input type="file" id="fFile" hidden accept=".pdf,.docx,.doc">
+            </label>
+            <div class="fz-name" id="fFileName"></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary-c" onclick="toggleDocForm()"><i class="bi bi-x-lg"></i> Huỷ</button>
+          <button class="btn-primary-c" onclick="saveDoc()"><i class="bi bi-check-lg"></i> Lưu & Đăng</button>
+        </div>
+      </div>
+
+      <!-- Bảng đề thi -->
+      <div class="a-card">
+        <div class="a-card-header">
+          <h5><i class="bi bi-file-earmark-text-fill" style="color:var(--coral)"></i> Quản lý đề thi</h5>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn-secondary-c" onclick="exportDocs()"><i class="bi bi-download"></i> Xuất CSV</button>
+            <button class="btn-primary-c" onclick="toggleDocForm()"><i class="bi bi-plus-lg"></i> Thêm đề mới</button>
+          </div>
+        </div>
+        <div style="padding:.8rem 1.2rem;border-bottom:1px solid rgba(15,23,42,.04)">
+          <div class="filter-bar">
+            <button class="filter-chip active" data-filter="all" onclick="filterDocs(this,'all')">Tất cả</button>
+            <button class="filter-chip" data-filter="free" onclick="filterDocs(this,'free')">Miễn phí</button>
+            <button class="filter-chip" data-filter="premium" onclick="filterDocs(this,'premium')">Có phí</button>
+            <div class="filter-search">
+              <i class="bi bi-search"></i>
+              <input type="text" placeholder="Tìm đề thi..." id="docSearchInput" oninput="searchDocs()">
+            </div>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="a-table">
+            <thead><tr><th>Đề thi</th><th>Môn</th><th>Loại</th><th>Giá</th><th>Tải</th><th>Rating</th><th style="width:100px">Thao tác</th></tr></thead>
+            <tbody id="docTableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination-bar" id="docPagination">
+          <span id="docPageInfo">Hiển thị 1-10 / 12 đề thi</span>
+          <div class="page-btns" id="docPageBtns"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- TAB: POSTS (Bài viết)         -->
+    <!-- ============================= -->
+    <div id="tab-posts" style="display:none">
+
+      <!-- Form thêm/sửa bài viết -->
+      <div class="form-section" id="postForm">
+        <h5><i class="bi bi-pen-fill" style="color:var(--grape)"></i> <span id="postFormTitle">Thêm bài viết mới</span></h5>
+        <div class="fg">
+          <div class="fg-full">
+            <label class="fl">Tiêu đề bài viết *</label>
+            <input class="fi" id="pTitle" placeholder="Vd: 5 mẹo giải nhanh Hàm số trong 30 giây">
+          </div>
+          <div>
+            <label class="fl">Danh mục *</label>
+            <select class="fsel" id="pCategory">
+              <option value="">Chọn danh mục...</option>
+              <option value="toan">Toán</option><option value="ly">Vật lý</option>
+              <option value="hoa">Hoá học</option><option value="sinh">Sinh học</option>
+              <option value="anh">Tiếng Anh</option><option value="van">Ngữ văn</option>
+              <option value="su">Lịch sử</option><option value="dia">Địa lý</option>
+              <option value="phuongphap">Phương pháp</option><option value="suckhoe">Sức khoẻ</option>
+              <option value="kinhnghiem">Kinh nghiệm</option>
+            </select>
+          </div>
+          <div>
+            <label class="fl">Tác giả *</label>
+            <input class="fi" id="pAuthor" placeholder="Vd: Minh Tuấn">
+          </div>
+          <div>
+            <label class="fl">Danh mục hiển thị (tag trên ảnh)</label>
+            <input class="fi" id="pCategoryLabel" placeholder="Vd: Toán, Phương pháp...">
+            <div class="fi-hint">Tự lấy từ danh mục nếu để trống</div>
+          </div>
+          <div class="fg-full">
+            <label class="fl">Ảnh bìa bài viết *</label>
+            <label class="fz" for="pCoverFile">
+              <i class="bi bi-card-image"></i>
+              <p>Tải ảnh bìa lên — hiển thị ở trang Góc sĩ tử</p>
+              <p style="font-size:.73rem;color:var(--ink-faint)">JPG, PNG — tỉ lệ 16:9 hoặc 3:2 đẹp nhất · tối đa 2MB</p>
+              <input type="file" id="pCoverFile" hidden accept="image/*">
+            </label>
+            <div class="fz-preview" id="pCoverPreview"></div>
+            <div class="fz-name" id="pCoverName"></div>
+          </div>
+          <div class="fg-full">
+            <label class="fl">Mô tả ngắn *</label>
+            <textarea class="fta" id="pExcerpt" placeholder="Mô tả ngắn gọn hiển thị ở trang Góc sĩ tử..." style="min-height:60px"></textarea>
+          </div>
+          <div class="fg-full">
+            <label class="fl">Tags</label>
+            <div class="tag-input-wrap" id="pTagsWrap">
+              <input type="text" id="pTagInput" placeholder="Nhập tag rồi Enter..." onkeydown="handleTagKey(event)">
+            </div>
+            <div class="fi-hint">Nhấn Enter để thêm tag, nhấn × để xoá</div>
+          </div>
+          <div class="fg-full">
+            <label class="fl">Nội dung bài viết *</label>
+            <div class="rte-toolbar">
+              <button onclick="rteCmd('bold')" title="Đậm"><i class="bi bi-type-bold"></i></button>
+              <button onclick="rteCmd('italic')" title="Nghiêng"><i class="bi bi-type-italic"></i></button>
+              <button onclick="rteCmd('underline')" title="Gạch chân"><i class="bi bi-type-underline"></i></button>
+              <button onclick="rteCmd('insertOrderedList')" title="Danh sách số"><i class="bi bi-list-ol"></i></button>
+              <button onclick="rteCmd('insertUnorderedList')" title="Danh sách"><i class="bi bi-list-ul"></i></button>
+              <button onclick="rteCmd('formatBlock','H2')" title="Tiêu đề"><i class="bi bi-type-h2"></i></button>
+              <button onclick="rteCmd('formatBlock','H3')" title="Tiêu đề nhỏ"><i class="bi bi-type-h3"></i></button>
+              <button onclick="rteCmd('formatBlock','BLOCKQUOTE')" title="Trích dẫn"><i class="bi bi-blockquote-left"></i></button>
+              <button onclick="insertLink()" title="Chèn link"><i class="bi bi-link-45deg"></i></button>
+              <button onclick="insertImage()" title="Chèn ảnh"><i class="bi bi-card-image"></i></button>
+            </div>
+            <div class="rte-editor" contenteditable="true" id="pContent" data-placeholder="Viết nội dung bài viết tại đây..."></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary-c" onclick="togglePostForm()"><i class="bi bi-x-lg"></i> Huỷ</button>
+          <button class="btn-secondary-c" onclick="savePost('draft')"><i class="bi bi-file-earmark"></i> Lưu nháp</button>
+          <button class="btn-primary-c" onclick="savePost('published')"><i class="bi bi-send-fill"></i> Đăng bài</button>
+        </div>
+      </div>
+
+      <!-- Bảng bài viết -->
+      <div class="a-card">
+        <div class="a-card-header">
+          <h5><i class="bi bi-pen-fill" style="color:var(--grape)"></i> Bài viết Góc sĩ tử</h5>
+          <button class="btn-primary-c" onclick="togglePostForm()"><i class="bi bi-plus-lg"></i> Viết bài mới</button>
+        </div>
+        <div style="padding:.8rem 1.2rem;border-bottom:1px solid rgba(15,23,42,.04)">
+          <div class="filter-bar">
+            <button class="filter-chip active" data-pfilter="all" onclick="filterPosts(this,'all')">Tất cả</button>
+            <button class="filter-chip" data-pfilter="published" onclick="filterPosts(this,'published')">Đã đăng</button>
+            <button class="filter-chip" data-pfilter="draft" onclick="filterPosts(this,'draft')">Nháp</button>
+            <div class="filter-search">
+              <i class="bi bi-search"></i>
+              <input type="text" placeholder="Tìm bài viết..." id="postSearchInput" oninput="searchPosts()">
+            </div>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="a-table">
+            <thead><tr><th>Bài viết</th><th>Danh mục</th><th>Tác giả</th><th>Trạng thái</th><th>Ngày tạo</th><th style="width:100px">Thao tác</th></tr></thead>
+            <tbody id="postTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- TAB: ORDERS (Đơn hàng)        -->
+    <!-- ============================= -->
+    <div id="tab-orders" style="display:none">
+      <!-- Ghi chú flow duyệt thủ công -->
+      <div style="background:rgba(247,168,35,.06);border:1.5px solid rgba(247,168,35,.18);border-radius:var(--radius);padding:.8rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;gap:.7rem;font-size:.85rem">
+        <i class="bi bi-person-check" style="font-size:1.2rem;color:var(--amber)"></i>
+        <div><strong style="color:#9A6700">Duyệt thủ công</strong> — Khi khách chuyển khoản xong sẽ bấm "Tôi đã CK". Đơn hiện ở đây. Bạn kiểm tra lịch sử CK ngân hàng → nếu đúng bấm <strong>Duyệt</strong> → đề mở khoá cho khách tải.</div>
+      </div>
+
+      <!-- Thống kê nhanh đơn hàng -->
+      <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:linear-gradient(135deg,var(--teal),var(--sky))"><i class="bi bi-check-circle-fill"></i></div>
+          <div class="stat-body">
+            <div class="stat-num" id="statPaid">0</div>
+            <div class="stat-label">Đã duyệt</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:linear-gradient(135deg,var(--amber),var(--coral))"><i class="bi bi-hourglass-split"></i></div>
+          <div class="stat-body">
+            <div class="stat-num" id="statPending">0</div>
+            <div class="stat-label">Chờ CK / đang treo</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:linear-gradient(135deg,var(--ink-soft),var(--ink-faint))"><i class="bi bi-clock-history"></i></div>
+          <div class="stat-body">
+            <div class="stat-num" id="statExpired">0</div>
+            <div class="stat-label">Từ chối</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:linear-gradient(135deg,var(--grape),var(--sky))"><i class="bi bi-cash-stack"></i></div>
+          <div class="stat-body">
+            <div class="stat-num" id="statRevenue">0</div>
+            <div class="stat-label">Tổng thu tháng này</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="a-card">
+        <div class="a-card-header">
+          <h5><i class="bi bi-receipt" style="color:var(--grape)"></i> Lịch sử đơn hàng</h5>
+          <button class="btn-secondary-c" onclick="exportOrders()"><i class="bi bi-download"></i> Xuất CSV</button>
+        </div>
+        <div style="padding:.8rem 1.2rem;border-bottom:1px solid rgba(15,23,42,.04)">
+          <div class="filter-bar">
+            <button class="filter-chip active" data-ofilter="all" onclick="filterOrders(this,'all')">Tất cả</button>
+            <button class="filter-chip" data-ofilter="pending" onclick="filterOrders(this,'pending')"><i class="bi bi-hourglass-split" style="font-size:.7rem"></i> Chờ duyệt</button>
+            <button class="filter-chip" data-ofilter="approved" onclick="filterOrders(this,'approved')"><i class="bi bi-check-circle" style="font-size:.7rem"></i> Đã duyệt</button>
+            <button class="filter-chip" data-ofilter="rejected" onclick="filterOrders(this,'rejected')"><i class="bi bi-x-circle" style="font-size:.7rem"></i> Từ chối</button>
+            <div class="filter-search">
+              <i class="bi bi-search"></i>
+              <input type="text" placeholder="Tìm mã ĐH, tên, nội dung CK..." id="orderSearchInput" oninput="searchOrders()">
+            </div>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="a-table">
+            <thead><tr><th>Mã ĐH</th><th>Đề thi</th><th>Khách / Nội dung CK</th><th>Mã giao dịch</th><th>Số tiền</th><th>Thời gian</th><th>Trạng thái</th><th style="width:120px">Thao tác</th></tr></thead>
+            <tbody id="orderTableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination-bar" id="orderPagination">
+          <span id="orderPageInfo"></span>
+          <div class="page-btns" id="orderPageBtns"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- TAB: REPORTS (Báo cáo sự cố)  -->
+    <!-- ============================= -->
+    <div id="tab-reports" style="display:none">
+      <div class="stat-row" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:linear-gradient(135deg,#EF4444,#F97316)"><i class="bi bi-flag-fill"></i></div>
+          <div class="stat-body">
+            <div class="stat-num" id="statReportPending">0</div>
+            <div class="stat-label">Chờ xử lý</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:linear-gradient(135deg,#059669,#10B981)"><i class="bi bi-check-circle-fill"></i></div>
+          <div class="stat-body">
+            <div class="stat-num" id="statReportDone">0</div>
+            <div class="stat-label">Đã xử lý</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:linear-gradient(135deg,var(--coral),var(--sky))"><i class="bi bi-bar-chart-fill"></i></div>
+          <div class="stat-body">
+            <div class="stat-num" id="statReportTotal">0</div>
+            <div class="stat-label">Tổng báo cáo</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="a-card">
+        <div class="a-card-header">
+          <h5><i class="bi bi-flag-fill" style="color:#EF4444"></i> Danh sách báo cáo</h5>
+          <button class="btn-secondary-c" onclick="clearResolvedReports()"><i class="bi bi-trash3"></i> Xóa đã xử lý</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="a-table">
+            <thead><tr><th>Thời gian</th><th>Mã ĐH</th><th>Loại sự cố</th><th>Liên hệ</th><th>Mô tả</th><th>Trạng thái</th><th style="width:140px">Thao tác</th></tr></thead>
+            <tbody id="reportTableBody"></tbody>
+          </table>
+        </div>
+        <div id="reportEmpty" style="text-align:center;padding:2.5rem;display:none">
+          <i class="bi bi-flag" style="font-size:2.5rem;color:#CBD5E1"></i>
+          <p style="color:#64748B;margin:.6rem 0 0">Chưa có báo cáo nào</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- TAB: SETTINGS (Cài đặt)       -->
+    <!-- ============================= -->
+    <div id="tab-settings" style="display:none">
+      <div class="settings-section" style="max-width:560px">
+        <h6><i class="bi bi-bank" style="color:var(--coral)"></i> Thông tin ngân hàng</h6>
+        <p style="font-size:.82rem;color:var(--ink-soft);margin-bottom:1rem">Thông tin này hiển thị ở trang thanh toán. QR và nội dung CK được tạo tự động theo môn và giá tiền.</p>
+        <div style="display:flex;flex-direction:column;gap:1rem">
+          <div><label class="fl">Tên ngân hàng</label><input class="fi" id="sBankName" value="Vietcombank (VCB)"></div>
+          <div><label class="fl">Số tài khoản</label><input class="fi" id="sBankAccount" value="1234567890"></div>
+          <div><label class="fl">Chủ tài khoản</label><input class="fi" id="sBankOwner" value="NGUYEN VAN A" style="text-transform:uppercase"></div>
+        </div>
+        <div style="margin-top:1.2rem;text-align:right">
+          <button class="btn-primary-c" onclick="saveSettings('bank')"><i class="bi bi-check-lg"></i> Lưu thay đổi</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.content -->
+</div><!-- /.main -->
+
+<!-- Toast -->
+<div class="toast-msg" id="toast"><i class="bi bi-check-circle-fill"></i> <span id="toastText">Thành công!</span></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

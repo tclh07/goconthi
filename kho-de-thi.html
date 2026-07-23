@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kho đề thi TN THPT — GócÔnThi</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="css/main.css" rel="stylesheet">
+<link href="css/kho-de-thi.css" rel="stylesheet">
+</head>
+<body class="page-tailieu">
+<div id="main-navbar"></div>
+
+<!-- ============ HERO ============ -->
+<header class="kdt-hero2">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <span class="sec-tag"><i class="bi bi-archive me-1"></i> Kho đề thi</span>
+        <h1>Tìm đề thi TN THPT <span class="hl">nhanh nhất</span></h1>
+        <p class="lead">Hơn 1.200 bộ đề thi thử từ 63 Sở GD&amp;ĐT, đề đúng sai, đề minh hoạ Bộ. Lọc theo môn, loại đề và tải ngay.</p>
+        <div class="kdt-search2">
+          <div class="sw2">
+            <i class="bi bi-search"></i>
+            <input type="text" id="kdtSearchInput" placeholder="VD: Toán Sở Hà Nội, Đúng sai Lý..." onkeydown="if(event.key==='Enter')kdtSearch()">
+            <button class="btn btn-coral" onclick="kdtSearch()" style="color:#fff"><i class="bi bi-search" style="color:#fff;margin-right:5px"></i>Tìm kiếm</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-flex justify-content-end">
+        <div class="hero-stats">
+          <div class="hero-stat-item">
+            <div class="hero-stat-num" style="color:var(--coral)">1.200+</div>
+            <div class="hero-stat-label">bộ đề thi</div>
+          </div>
+          <div class="hero-stat-sep"></div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-num" style="color:var(--teal)">63</div>
+            <div class="hero-stat-label">Sở GD&amp;ĐT</div>
+          </div>
+          <div class="hero-stat-sep"></div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-num" style="color:var(--grape)">9</div>
+            <div class="hero-stat-label">Môn thi</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ SUBJECT STRIP ============ -->
+<div class="subject-strip">
+  <div class="container">
+    <div class="subject-pills" id="subjectPills">
+      <button class="sub-pill active" data-mon="all" onclick="filterMon(this)">
+        <span class="sp-ic" style="background:linear-gradient(135deg,var(--coral),var(--amber))"><i class="bi bi-grid-fill"></i></span>
+        Tất cả
+        <span class="sp-count">1.2K</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FILTER BAR + GRID ============ -->
+<section class="container" style="padding-bottom:3rem">
+  <div class="filter-bar2">
+    <span class="fb-result"><i class="bi bi-file-earmark-text" style="color:var(--coral)"></i> <strong id="resultCount">12</strong> đề thi</span>
+    <span class="fb-sep"></span>
+    <select class="fb-select" id="filterLoai" onchange="applyFilters()">
+      <option value="all">Tất cả loại</option>
+      <option value="so">Đề Sở GD&amp;ĐT</option>
+      <option value="dungsai">Đề đúng sai</option>
+      <option value="minhhoa">Đề minh hoạ Bộ</option>
+      <option value="tomtat">Tóm tắt kiến thức</option>
+    </select>
+    <select class="fb-select" id="filterNam" onchange="applyFilters()">
+      <option value="all">Mọi năm</option>
+      <option value="2026" selected>2026</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+    </select>
+    <div class="fb-price-btns">
+      <button class="fb-price-btn active" data-price="all" onclick="filterPrice(this)">Tất cả</button>
+      <button class="fb-price-btn" data-price="free" onclick="filterPrice(this)"><i class="bi bi-unlock"></i> Free</button>
+      <button class="fb-price-btn" data-price="premium" onclick="filterPrice(this)"><i class="bi bi-gem"></i> Premium</button>
+    </div>
+    <button class="fb-reset" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise"></i> Xoá lọc</button>
+    <div class="fb-sort">
+      <button class="fb-sort-btn active" onclick="sortDocs(this,'newest')"><i class="bi bi-clock me-1"></i>Mới nhất</button>
+      <button class="fb-sort-btn" onclick="sortDocs(this,'downloads')"><i class="bi bi-download me-1"></i>Tải nhiều</button>
+      <button class="fb-sort-btn" onclick="sortDocs(this,'rating')"><i class="bi bi-star me-1"></i>Hay nhất</button>
+    </div>
+  </div>
+
+  <div class="row g-3 card-grid2" id="docGrid"></div>
+
+  <div class="pag2">
+    <button class="pag2-btn active">1</button>
+    <button class="pag2-btn">2</button>
+    <button class="pag2-btn">3</button>
+    <button class="pag2-btn dots">...</button>
+    <button class="pag2-btn">12</button>
+    <button class="pag2-btn"><i class="bi bi-chevron-right"></i></button>
+  </div>
+</section>
+
+<footer id="main-footer"></footer>
+<div id="search-overlay"></div>
+<div id="login-modal"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/components.js"></script>
+<script src="js/render.js"></script>
+<script src="js/kho-de-thi.js"></script>
+</body>
+</html>
