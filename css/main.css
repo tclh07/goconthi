@@ -268,7 +268,7 @@ h1,h2,h3,h4,h5{font-family:'Baloo 2',cursive;letter-spacing:-.01em}
 .doc-card:hover::before{opacity:1}
 .doc-cover{height:152px;position:relative;display:flex;align-items:flex-end;padding:.85rem;overflow:hidden;background:#e9eef6}
 .doc-cover .pat{display:none}
-.doc-thumb{position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:top center;background:#fff}
+.doc-thumb{position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:top center;background:transparent}
 .doc-cover::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(to top,rgba(15,23,55,.5),rgba(15,23,55,0) 42%)}
 .doc-type{position:relative;z-index:2;background:rgba(255,255,255,.95);color:var(--ink);font-weight:600;font-size:.72rem;padding:.3rem .75rem;border-radius:50px;box-shadow:0 3px 10px -4px rgba(15,23,55,.3)}
 /* icon định dạng nhỏ ở góc phải */
