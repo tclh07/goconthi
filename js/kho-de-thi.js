@@ -70,7 +70,7 @@ function renderCard(doc){
 }
 
 function renderGrid(docs){
-  var grid = document.getElementById('docsGrid');
+  var grid = document.getElementById('docGrid');
   if(!grid) return;
   if(!docs.length){ showEmpty(); return; }
   grid.innerHTML = docs.map(renderCard).join('');
@@ -79,7 +79,7 @@ function renderGrid(docs){
 }
 
 function showEmpty(){
-  var grid = document.getElementById('docsGrid');
+  var grid = document.getElementById('docGrid');
   if(grid) grid.innerHTML = '<div class="kdt-empty"><div class="ke-icon"><i class="bi bi-search"></i></div><h5>Không tìm thấy đề thi</h5><p>Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm</p><button class="btn btn-coral" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise me-1"></i>Xoá bộ lọc</button></div>';
   document.getElementById('resultCount').textContent='0';
 }
