@@ -22,8 +22,13 @@ window.hlToast = function (msg, icon) {
 
 /* ---------- Hiệu ứng xuất hiện khi cuộn (.reveal) ---------- */
 window.setupReveal = function () {
-  var els = document.querySelectorAll('.reveal');
-  if (!els.length || !('IntersectionObserver' in window)) return;
+  var els = document.querySelectorAll('.reveal:not(.show)');
+  if (!els.length) return;
+  if (!('IntersectionObserver' in window)) {
+    /* Fallback: hiện tất cả nếu trình duyệt cũ */
+    els.forEach(function (el) { el.classList.add('show'); });
+    return;
+  }
   document.body.classList.add('reveal-ready');
   var io = new IntersectionObserver(function (entries) {
     entries.forEach(function (e, i) {
@@ -32,7 +37,7 @@ window.setupReveal = function () {
         io.unobserve(e.target);
       }
     });
-  }, { threshold: 0.08 });
+  }, { threshold: 0.05, rootMargin: '50px' });
   els.forEach(function (el) { io.observe(el); });
 };
 
