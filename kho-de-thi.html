@@ -1,125 +1,147 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kho đề thi TN THPT — GócÔnThi</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-<link href="css/main.css" rel="stylesheet">
-<link href="css/kho-de-thi.css" rel="stylesheet">
-</head>
-<body class="page-tailieu">
-<div id="main-navbar"></div>
+/* ============================================================
+   KHO ĐỀ THI v2 — Logic (Supabase version)
+   ============================================================ */
+var SUBJECT_MAP = {toan:'Toán',ly:'Vật lý',hoa:'Hoá học',sinh:'Sinh học',anh:'Tiếng Anh',van:'Ngữ văn',su:'Lịch sử',dia:'Địa lý',gdktpl:'GD KT&PL'};
+var TYPE_MAP = {so:'Đề Sở',dungsai:'Đúng sai',minhhoa:'Minh hoạ Bộ',tomtat:'Tóm tắt'};
 
-<!-- ============ HERO ============ -->
-<header class="kdt-hero2">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-lg-7">
-        <span class="sec-tag"><i class="bi bi-archive me-1"></i> Kho đề thi</span>
-        <h1>Tìm đề thi TN THPT <span class="hl">nhanh nhất</span></h1>
-        <p class="lead">Hơn 1.200 bộ đề thi thử từ 63 Sở GD&amp;ĐT, đề đúng sai, đề minh hoạ Bộ. Lọc theo môn, loại đề và tải ngay.</p>
-        <div class="kdt-search2">
-          <div class="sw2">
-            <i class="bi bi-search"></i>
-            <input type="text" id="kdtSearchInput" placeholder="VD: Toán Sở Hà Nội, Đúng sai Lý..." onkeydown="if(event.key==='Enter')kdtSearch()">
-            <button class="btn btn-coral" onclick="kdtSearch()" style="color:#fff"><i class="bi bi-search" style="color:#fff;margin-right:5px"></i>Tìm kiếm</button>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-5 d-none d-lg-flex justify-content-end">
-        <div class="hero-stats">
-          <div class="hero-stat-item">
-            <div class="hero-stat-num" style="color:var(--coral)">1.200+</div>
-            <div class="hero-stat-label">bộ đề thi</div>
-          </div>
-          <div class="hero-stat-sep"></div>
-          <div class="hero-stat-item">
-            <div class="hero-stat-num" style="color:var(--teal)">63</div>
-            <div class="hero-stat-label">Sở GD&amp;ĐT</div>
-          </div>
-          <div class="hero-stat-sep"></div>
-          <div class="hero-stat-item">
-            <div class="hero-stat-num" style="color:var(--grape)">9</div>
-            <div class="hero-stat-label">Môn thi</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
+var allDocs = [];
+var currentMon = 'all';
+var currentPrice = 'all';
 
-<!-- ============ SUBJECT STRIP ============ -->
-<div class="subject-strip">
-  <div class="container">
-    <div class="subject-pills" id="subjectPills">
-      <button class="sub-pill active" data-mon="all" onclick="filterMon(this)">
-        <span class="sp-ic" style="background:linear-gradient(135deg,var(--coral),var(--amber))"><i class="bi bi-grid-fill"></i></span>
-        Tất cả
-        <span class="sp-count">1.2K</span>
-      </button>
-    </div>
-  </div>
-</div>
+/* Load subject pills từ Supabase */
+(async function(){
+  try {
+    var subs = await DB.getSubjects();
+    var c = document.getElementById('subjectPills');
+    c.innerHTML += subs.map(function(s){
+      var g = s.gradient||['#1E40AF','#F59E0B'];
+      return '<button class="sub-pill" data-mon="'+s.id+'" onclick="filterMon(this)">'
+        +'<span class="sp-ic" style="background:linear-gradient(135deg,'+g[0]+','+g[1]+')"><i class="bi '+s.icon+'"></i></span>'
+        +s.name+'<span class="sp-count">'+s.count+'</span></button>';
+    }).join('');
+  } catch(e){ console.warn('subjects:', e); }
+})();
 
-<!-- ============ FILTER BAR + GRID ============ -->
-<section class="container" style="padding-bottom:3rem">
-  <div class="filter-bar2">
-    <span class="fb-result"><i class="bi bi-file-earmark-text" style="color:var(--coral)"></i> <strong id="resultCount">12</strong> đề thi</span>
-    <span class="fb-sep"></span>
-    <select class="fb-select" id="filterLoai" onchange="applyFilters()">
-      <option value="all">Tất cả loại</option>
-      <option value="so">Đề Sở GD&amp;ĐT</option>
-      <option value="dungsai">Đề đúng sai</option>
-      <option value="minhhoa">Đề minh hoạ Bộ</option>
-      <option value="tomtat">Tóm tắt kiến thức</option>
-    </select>
-    <select class="fb-select" id="filterNam" onchange="applyFilters()">
-      <option value="all">Mọi năm</option>
-      <option value="2026" selected>2026</option>
-      <option value="2025">2025</option>
-      <option value="2024">2024</option>
-    </select>
-    <div class="fb-price-btns">
-      <button class="fb-price-btn active" data-price="all" onclick="filterPrice(this)">Tất cả</button>
-      <button class="fb-price-btn" data-price="free" onclick="filterPrice(this)"><i class="bi bi-unlock"></i> Free</button>
-      <button class="fb-price-btn" data-price="premium" onclick="filterPrice(this)"><i class="bi bi-gem"></i> Premium</button>
-    </div>
-    <button class="fb-reset" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise"></i> Xoá lọc</button>
-    <div class="fb-sort">
-      <button class="fb-sort-btn active" onclick="sortDocs(this,'newest')"><i class="bi bi-clock me-1"></i>Mới nhất</button>
-      <button class="fb-sort-btn" onclick="sortDocs(this,'downloads')"><i class="bi bi-download me-1"></i>Tải nhiều</button>
-      <button class="fb-sort-btn" onclick="sortDocs(this,'rating')"><i class="bi bi-star me-1"></i>Hay nhất</button>
-    </div>
-  </div>
+/* Load documents từ Supabase */
+(async function(){
+  try {
+    var docs = await DB.getDocs();
+    allDocs = docs;
+    window._allDocsData = docs;
+    renderGrid(docs);
+  } catch(e){ console.warn('docs:', e); showEmpty(); }
+})();
 
-  <div class="row g-3 card-grid2" id="docGrid"></div>
+function renderCard(doc){
+  var isFree = !doc.price;
+  var grad = doc.gradient||['#1E40AF','#F59E0B'];
+  var subName = SUBJECT_MAP[doc.subject]||doc.subject;
+  var typeName = TYPE_MAP[doc.type]||doc.type;
+  var fmt = doc.format||'pdf';
+  var dl = doc.downloads>=1000?(doc.downloads/1000).toFixed(1).replace('.0','')+'K':doc.downloads;
+  var qInfo = doc.questions?doc.questions+' câu':doc.pages+' trang';
+  var priceHtml, btnHtml;
+  if(isFree){
+    priceHtml='<span class="dc2-price-tag free">Free</span>';
+    btnHtml='<button class="dc2-btn free-btn" onclick="event.preventDefault();event.stopPropagation();openDocModal('+doc.id+')"><i class="bi bi-download"></i> Tải</button>';
+  } else {
+    priceHtml='<span class="dc2-price-tag">'+(doc.price/1000)+'K</span>';
+    btnHtml='<button class="dc2-btn premium-btn" onclick="event.preventDefault();event.stopPropagation();openDocModal('+doc.id+')"><i class="bi bi-gem"></i> Mua</button>';
+  }
 
-  <div class="pag2">
-    <button class="pag2-btn active">1</button>
-    <button class="pag2-btn">2</button>
-    <button class="pag2-btn">3</button>
-    <button class="pag2-btn dots">...</button>
-    <button class="pag2-btn">12</button>
-    <button class="pag2-btn"><i class="bi bi-chevron-right"></i></button>
-  </div>
-</section>
+  var thumbHtml = doc.thumbnail
+    ? '<img class="doc-thumb" src="'+doc.thumbnail+'" alt="" loading="lazy">'
+    : '';
+  var fmtIcon = {pdf:'bi-file-earmark-pdf-fill',docx:'bi-file-earmark-word-fill'}[fmt]||'bi-file-earmark-fill';
 
-<footer id="main-footer"></footer>
-<div id="search-overlay"></div>
-<div id="login-modal"></div>
+  return '<a class="dc2" href="chi-tiet-de.html?id='+doc.id+'">'
+    +'<div class="dc2-cover" style="background:linear-gradient(135deg,'+grad[0]+','+grad[1]+')">'
+    +thumbHtml
+    +'<i class="bi '+fmtIcon+' dc2-fmt"></i>'
+    +'<span class="dc2-source">'+(doc.source||typeName)+'</span>'
+    +'</div>'
+    +'<div class="dc2-body">'
+    +'<div class="dc2-title">'+doc.title+'</div>'
+    +'<div class="dc2-meta"><i class="bi '+(doc.icon||'bi-file-earmark')+'"></i> '+subName+' · '+qInfo+' · '+doc.year+'</div>'
+    +'<div class="dc2-foot">'
+    +'<div class="dc2-stats"><span><i class="bi bi-download"></i> '+dl+'</span><span><i class="bi bi-star-fill" style="color:var(--amber)"></i> '+doc.rating+'</span></div>'
+    +priceHtml+btnHtml
+    +'</div></div></a>';
+}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase-config.js"></script>
-<script src="js/app.js"></script>
-<script src="js/components.js"></script>
-<script src="js/render.js"></script>
-<script src="js/kho-de-thi.js"></script>
-</body>
-</html>
+function renderGrid(docs){
+  var grid = document.getElementById('docGrid');
+  if(!grid) return;
+  if(!docs.length){ showEmpty(); return; }
+  grid.innerHTML = docs.map(renderCard).join('');
+  document.getElementById('resultCount').textContent = docs.length;
+  if(typeof setupReveal==='function') setupReveal();
+}
+
+function showEmpty(){
+  var grid = document.getElementById('docGrid');
+  if(grid) grid.innerHTML = '<div class="kdt-empty"><div class="ke-icon"><i class="bi bi-search"></i></div><h5>Không tìm thấy đề thi</h5><p>Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm</p><button class="btn btn-coral" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise me-1"></i>Xoá bộ lọc</button></div>';
+  document.getElementById('resultCount').textContent='0';
+}
+
+function filterMon(btn){
+  document.querySelectorAll('.sub-pill').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  currentMon=btn.getAttribute('data-mon');
+  applyFilters();
+}
+function filterPrice(btn){
+  document.querySelectorAll('.fb-price-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  currentPrice=btn.getAttribute('data-price');
+  applyFilters();
+}
+function applyFilters(){
+  var loai=document.getElementById('filterLoai').value;
+  var nam=document.getElementById('filterNam').value;
+  var filtered=allDocs.filter(function(d){
+    if(currentMon!=='all'&&d.subject!==currentMon) return false;
+    if(loai!=='all'&&d.type!==loai) return false;
+    if(nam!=='all'&&String(d.year)!==nam) return false;
+    if(currentPrice==='free'&&d.price) return false;
+    if(currentPrice==='premium'&&!d.price) return false;
+    return true;
+  });
+  renderGrid(filtered);
+}
+function resetFilters(){
+  currentMon='all'; currentPrice='all';
+  document.querySelectorAll('.sub-pill').forEach(function(b){b.classList.remove('active');});
+  document.querySelector('.sub-pill[data-mon="all"]').classList.add('active');
+  document.querySelectorAll('.fb-price-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelector('.fb-price-btn[data-price="all"]').classList.add('active');
+  document.getElementById('filterLoai').selectedIndex=0;
+  document.getElementById('filterNam').selectedIndex=0;
+  renderGrid(allDocs);
+}
+function sortDocs(btn,type){
+  document.querySelectorAll('.fb-sort-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  var s=allDocs.slice();
+  if(type==='downloads') s.sort(function(a,b){return b.downloads-a.downloads;});
+  else if(type==='rating') s.sort(function(a,b){return b.rating-a.rating;});
+  else s.sort(function(a,b){return b.year-a.year||b.id-a.id;});
+  allDocs=s; applyFilters();
+}
+function kdtSearch(){
+  var q=(document.getElementById('kdtSearchInput')||{}).value||'';
+  if(!q.trim()) return;
+  var ql=q.toLowerCase();
+  var f=allDocs.filter(function(d){
+    return d.title.toLowerCase().indexOf(ql)!==-1||(SUBJECT_MAP[d.subject]||'').toLowerCase().indexOf(ql)!==-1||(d.source||'').toLowerCase().indexOf(ql)!==-1;
+  });
+  renderGrid(f);
+}
+
+/* Auto-filter from URL */
+(function(){
+  var p=new URLSearchParams(window.location.search);
+  var mon=p.get('mon'), q=p.get('q');
+  if(mon) setTimeout(function(){var b=document.querySelector('.sub-pill[data-mon="'+mon+'"]');if(b)filterMon(b);},500);
+  if(q){var i=document.getElementById('kdtSearchInput');if(i)i.value=q;setTimeout(kdtSearch,500);}
+})();
