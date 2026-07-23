@@ -1,3 +1,7 @@
+/* ============================================================
+   GócÔnThi — Admin Panel (Supabase version)
+   ============================================================ */
+
 var ADMIN_ACCOUNTS = [
   { user: 'admin', pass: 'chau@123' },
   { user: 'goconthi', pass: 'chau@123' }
@@ -7,42 +11,20 @@ function adminLogin(){
   var user = (document.getElementById('adminUser')||{}).value.trim();
   var pass = (document.getElementById('adminPass')||{}).value.trim();
   var err = document.getElementById('adminLoginError');
-
-  if(!user || !pass){
-    err.textContent = 'Vui lòng nhập đầy đủ thông tin';
-    err.style.display = '';
-    return;
+  if(!user || !pass){ err.textContent='Vui lòng nhập đầy đủ thông tin'; err.style.display=''; return; }
+  var found=false;
+  for(var i=0;i<ADMIN_ACCOUNTS.length;i++){
+    if(ADMIN_ACCOUNTS[i].user===user && ADMIN_ACCOUNTS[i].pass===pass){ found=true; break; }
   }
-
-  var found = false;
-  for(var i=0; i<ADMIN_ACCOUNTS.length; i++){
-    if(ADMIN_ACCOUNTS[i].user === user && ADMIN_ACCOUNTS[i].pass === pass){
-      found = true; break;
-    }
-  }
-
-  if(!found){
-    err.textContent = 'Sai tài khoản hoặc mật khẩu!';
-    err.style.display = '';
-    document.getElementById('adminPass').value = '';
-    return;
-  }
-
-  /* Lưu session */
-  localStorage.setItem('admin_session', JSON.stringify({user: user, loginAt: Date.now()}));
-  document.getElementById('adminLoginGate').style.opacity = '0';
-  setTimeout(function(){ document.getElementById('adminLoginGate').style.display = 'none'; }, 300);
+  if(!found){ err.textContent='Sai tài khoản hoặc mật khẩu!'; err.style.display=''; document.getElementById('adminPass').value=''; return; }
+  localStorage.setItem('admin_session', JSON.stringify({user:user, loginAt:Date.now()}));
+  document.getElementById('adminLoginGate').style.opacity='0';
+  setTimeout(function(){ document.getElementById('adminLoginGate').style.display='none'; }, 300);
 }
-
-/* Tự check session khi load */
 (function(){
-  var session = JSON.parse(localStorage.getItem('admin_session')||'null');
-  if(session){
-    var gate = document.getElementById('adminLoginGate');
-    if(gate) gate.style.display = 'none';
-  }
+  var session=JSON.parse(localStorage.getItem('admin_session')||'null');
+  if(session){ var gate=document.getElementById('adminLoginGate'); if(gate) gate.style.display='none'; }
 })();
-
 function adminLogout(){
   if(!confirm('Đăng xuất khỏi Admin?')) return;
   localStorage.removeItem('admin_session');
@@ -50,66 +32,17 @@ function adminLogout(){
 }
 
 // ========================================
-// DATA LAYER (thay bằng API calls khi có backend)
+// DATA — Supabase
 // ========================================
 var SUBJECTS={toan:'Toán',ly:'Vật lý',hoa:'Hoá học',sinh:'Sinh học',anh:'Tiếng Anh',van:'Ngữ văn',su:'Lịch sử',dia:'Địa lý',gdktpl:'GD KT&PL'};
 var TYPES={so:'Đề Sở',dungsai:'Đúng sai',minhhoa:'Minh hoạ',tomtat:'Tóm tắt'};
 var CATEGORIES={toan:'Toán',ly:'Vật lý',hoa:'Hoá học',sinh:'Sinh học',anh:'Tiếng Anh',van:'Ngữ văn',su:'Lịch sử',dia:'Địa lý',phuongphap:'Phương pháp',suckhoe:'Sức khoẻ',kinhnghiem:'Kinh nghiệm'};
-var TABS={dashboard:'Dashboard',documents:'Quản lý đề thi',posts:'Bài viết Góc sĩ tử',orders:'Lịch sử đơn hàng',reports:'Báo cáo sự cố',settings:'Cài đặt'};
+var TABS={dashboard:'Dashboard',documents:'Quản lý đề thi',posts:'Bài viết Góc sĩ tử',orders:'Lịch sử đơn hàng',settings:'Cài đặt'};
 
 var docsData=[];
-var postsData=[
-  {id:1,title:'5 mẹo giải nhanh Hàm số trong 30 giây',category:'toan',author:'Minh Tuấn',excerpt:'Kỹ thuật giải nhanh hàm bậc 3, bậc 4 mà không cần bảng biến thiên đầy đủ.',cover:null,tags:['toán','hàm số','mẹo'],status:'published',createdAt:'2026-07-10'},
-  {id:2,title:'Nhớ công thức Lý 12 bằng sơ đồ tư duy',category:'ly',author:'Ngọc Lan',excerpt:'Mind map giúp nhớ lâu hơn 3 lần. Áp dụng cho Dao động và Sóng.',cover:null,tags:['vật lý','mind map'],status:'published',createdAt:'2026-07-08'},
-  {id:3,title:'Từ 5 lên 8+ điểm Hoá chỉ trong 2 tháng',category:'hoa',author:'Hải Nam',excerpt:'Lộ trình thực tế từ sĩ tử tăng 3 điểm nhờ phân loại phản ứng.',cover:null,tags:['hoá học','kinh nghiệm'],status:'published',createdAt:'2026-07-05'},
-  {id:4,title:'Bí quyết 9+ Tiếng Anh cho người trung bình',category:'anh',author:'Thu Trang',excerpt:'45 phút/ngày, không cần học thêm. Từ bạn đạt 9.6 điểm.',cover:null,tags:['tiếng anh'],status:'published',createdAt:'2026-07-02'},
-  {id:5,title:'Pomodoro: ôn thi gấp đôi, không kiệt sức',category:'phuongphap',author:'Khánh Duy',excerpt:'Học 25 phút — nghỉ 5 phút. Hiệu quả bất ngờ khi ôn marathon.',cover:null,tags:['phương pháp','pomodoro'],status:'published',createdAt:'2026-06-28'},
-  {id:6,title:'Quản lý stress mùa thi: ăn, ngủ, nghỉ',category:'suckhoe',author:'BS Minh',excerpt:'Chế độ ăn ngủ và giải stress khoa học cho sĩ tử.',cover:null,tags:['sức khoẻ','stress'],status:'published',createdAt:'2026-06-25'},
-  {id:7,title:'Cách ôn Sinh hiệu quả khi còn 1 tháng',category:'sinh',author:'Admin',excerpt:'Đang viết...',cover:null,tags:['sinh học'],status:'draft',createdAt:'2026-07-15'}
-];
-// Trạng thái đơn hàng (localStorage):
-// pending  = Khách đã bấm "Tôi đã CK" nhưng Admin chưa duyệt
-// approved = Admin đã duyệt → đề mở khoá cho khách tải
-// rejected = Admin từ chối (CK sai hoặc không thấy tiền)
-var ORDERS_KEY='goconthi_orders';
-function loadOrdersFromStorage(){
-  try{ return JSON.parse(localStorage.getItem(ORDERS_KEY)) || []; }
-  catch(e){ return []; }
-}
-function saveOrdersToStorage(orders){
-  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-}
-// Chuyển đổi format từ localStorage sang format admin table
-function getOrdersData(){
-  var raw = loadOrdersFromStorage();
-  return raw.map(function(o,i){
-    return {
-      id: 'DH' + String(i+1).padStart(3,'0'),
-      orderCode: o.orderCode,
-      docTitle: o.docTitle || 'Đề #'+o.docId,
-      docId: o.docId,
-      txCode: o.orderCode,
-      amount: o.amount || 0,
-      time: o.createdAt || '',
-      status: o.status === 'approved' ? 'approved' : (o.status === 'rejected' ? 'rejected' : 'pending'),
-      customerInfo: o.customerInfo || o.customerName || '',
-      txContent: o.txContent || o.orderCode || '',
-      approvedBy: o.approvedBy || null,
-      approvedAt: o.approvedAt || null
-    };
-  });
-}
-var ordersData = getOrdersData();
+var postsData=[];
+var ordersData=[];
 
-// Cập nhật đơn hàng → đồng bộ localStorage
-function refreshOrders(){
-  ordersData = getOrdersData();
-}
-
-// Số đơn treo — dùng cho notification
-var _lastPendingCount = 0;
-
-// State
 var currentDocFilter='all';
 var currentDocSearch='';
 var currentPostFilter='all';
@@ -119,6 +52,7 @@ var currentOrderSearch='';
 var postTags=[];
 var editingDocId=null;
 var editingPostId=null;
+var _lastPendingCount=0;
 
 // ========================================
 // TAB NAVIGATION
@@ -132,11 +66,10 @@ function showTab(tab){
   document.querySelectorAll('.sb-nav a').forEach(function(a){
     a.classList.toggle('active',a.dataset.tab===tab);
   });
-  if(tab==='documents') renderDocTable();
-  if(tab==='posts') renderPostTable();
-  if(tab==='orders') renderOrderTable();
+  if(tab==='documents') loadAndRenderDocs();
+  if(tab==='posts') loadAndRenderPosts();
+  if(tab==='orders') loadAndRenderOrders();
   if(tab==='dashboard') renderDashboard();
-  if(tab==='reports') renderReports();
 }
 document.querySelectorAll('.sb-nav a').forEach(function(a){
   a.addEventListener('click',function(e){
@@ -156,13 +89,11 @@ function toast(msg){
 }
 
 // ========================================
-// DOCUMENTS
+// DOCUMENTS — Supabase CRUD
 // ========================================
-function loadDocsData(){
-  fetch('data/documents.json')
-    .then(function(r){return r.json()})
-    .then(function(d){docsData=d;renderDocTable();renderDashboard();})
-    .catch(function(){docsData=[];renderDocTable();renderDashboard();});
+async function loadAndRenderDocs(){
+  docsData = await DB.getDocs();
+  renderDocTable();
 }
 
 function renderDocTable(){
@@ -207,9 +138,7 @@ function renderDocTable(){
 
 function filterDocs(btn,f){
   document.querySelectorAll('[data-filter]').forEach(function(b){b.classList.remove('active')});
-  btn.classList.add('active');
-  currentDocFilter=f;
-  renderDocTable();
+  btn.classList.add('active'); currentDocFilter=f; renderDocTable();
 }
 function searchDocs(){currentDocSearch=document.getElementById('docSearchInput').value;renderDocTable();}
 
@@ -226,7 +155,6 @@ function resetDocForm(){
   document.getElementById('fThumbPreview').innerHTML='';document.getElementById('fThumbName').innerHTML='';
   document.getElementById('fPreviewFileName').innerHTML='';document.getElementById('fFileName').innerHTML='';
 }
-
 function setPrice(btn,type){
   btn.parentElement.querySelectorAll('button').forEach(function(b){b.className=''});
   btn.className=type==='free'?'active-free':'active-premium';
@@ -234,33 +162,60 @@ function setPrice(btn,type){
   document.getElementById('fPrice').disabled=type==='free';
 }
 
-function saveDoc(){
+async function saveDoc(){
   var title=document.getElementById('fTitle').value.trim();
   var subject=document.getElementById('fSubject').value;
   var type=document.getElementById('fType').value;
   var docCode=document.getElementById('fDocCode').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(!title||!subject||!type||!docCode){toast('Vui lòng điền đầy đủ thông tin bắt buộc!');return;}
 
-  // TODO: Backend — POST /api/documents với FormData (fThumb, fPreviewFile, fFile)
-  var newDoc={
-    id:editingDocId||docsData.length+1,
-    title:title,subject:subject,type:type,
-    source:document.getElementById('fSource').value.trim()||'',
+  var GRAD_MAP={toan:['#1E40AF','#3B82F6'],ly:['#0369A1','#0EA5E9'],hoa:['#0D9488','#14B8A6'],sinh:['#059669','#34D399'],anh:['#7C3AED','#A78BFA'],van:['#1E3A8A','#60A5FA'],su:['#6D28D9','#8B5CF6'],dia:['#0284C7','#38BDF8'],gdktpl:['#334155','#64748B']};
+  var ICON_MAP={toan:'bi-calculator',ly:'bi-lightning-charge',hoa:'bi-droplet-half',sinh:'bi-tree',anh:'bi-translate',van:'bi-pen',su:'bi-clock-history',dia:'bi-globe-asia-australia',gdktpl:'bi-bank'};
+
+  var docData={
+    title:title, subject:subject, type:type,
+    source:document.getElementById('fSource').value.trim()||null,
     year:parseInt(document.getElementById('fYear').value),
     price:parseInt(document.getElementById('fPrice').value)||0,
-    downloads:0,rating:0,
     pages:parseInt(document.getElementById('fPages').value)||0,
     questions:parseInt(document.getElementById('fQuestions').value)||null,
-    format:'pdf',gradient:['#1E40AF','#F59E0B'],icon:'bi-file-earmark-text',
-    thumbnail:null,previewUrl:null,docCode:docCode
+    format:'pdf',
+    gradient:GRAD_MAP[subject]||['#1E40AF','#F59E0B'],
+    icon:ICON_MAP[subject]||'bi-file-earmark-text',
+    doc_code:docCode
   };
+
+  // Upload thumbnail nếu có
+  var thumbFile=document.getElementById('fThumb').files[0];
+  if(thumbFile){
+    var thumbName='thumb_'+docCode+'_'+Date.now()+'.'+thumbFile.name.split('.').pop();
+    await Storage.uploadThumbnail(thumbFile, thumbName);
+    docData.thumbnail=Storage.getThumbnailUrl(thumbName);
+  }
+
+  // Upload file đề thi nếu có
+  var docFile=document.getElementById('fFile').files[0];
+  if(docFile){
+    var fileName=docCode+'_'+Date.now()+'.'+docFile.name.split('.').pop();
+    await Storage.uploadDocument(docFile, fileName);
+    docData.file_url=fileName;
+    docData.format=docFile.name.split('.').pop().toLowerCase();
+  }
+
   if(editingDocId){
-    var idx=docsData.findIndex(function(d){return d.id===editingDocId});
-    if(idx!==-1){newDoc.downloads=docsData[idx].downloads;newDoc.rating=docsData[idx].rating;docsData[idx]=newDoc;}
-  }else{docsData.push(newDoc);}
-  renderDocTable();toggleDocForm();
-  toast(editingDocId?'Đã cập nhật đề thi!':'Đã thêm đề thi thành công!');
+    await supabase.from('documents').update(docData).eq('id', editingDocId);
+    toast('Đã cập nhật đề thi!');
+  } else {
+    docData.downloads=0;
+    docData.rating=0;
+    await supabase.from('documents').insert(docData);
+    toast('Đã thêm đề thi thành công!');
+  }
+
+  await loadAndRenderDocs();
+  toggleDocForm();
   editingDocId=null;
+  renderDashboard();
 }
 
 function editDoc(id){
@@ -271,27 +226,26 @@ function editDoc(id){
   document.getElementById('fSubject').value=doc.subject;
   document.getElementById('fType').value=doc.type;
   document.getElementById('fSource').value=doc.source||'';
-  document.getElementById('fDocCode').value=doc.docCode||'';
+  document.getElementById('fDocCode').value=doc.doc_code||'';
   document.getElementById('fYear').value=doc.year;
   document.getElementById('fPages').value=doc.pages||'';
   document.getElementById('fQuestions').value=doc.questions||'';
   document.getElementById('fPrice').value=doc.price||0;
+  if(doc.thumbnail){
+    document.getElementById('fThumbPreview').innerHTML='<img src="'+doc.thumbnail+'" alt="Preview">';
+  }
   var f=document.getElementById('docForm');
   f.classList.add('open');
   document.getElementById('docFormTitle').textContent='Chỉnh sửa đề thi';
   f.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function deleteDoc(id){
+async function deleteDoc(id){
   if(!confirm('Xoá đề thi này?')) return;
-  docsData=docsData.filter(function(d){return d.id!==id});
-  // TODO: Backend — DELETE /api/documents/:id
-  renderDocTable();toast('Đã xoá đề thi');
-}
-
-function exportDocs(){
-  // TODO: Backend — GET /api/documents/export
-  toast('Tính năng xuất CSV sẽ hoạt động khi có backend');
+  await supabase.from('documents').delete().eq('id', id);
+  await loadAndRenderDocs();
+  renderDashboard();
+  toast('Đã xoá đề thi');
 }
 
 // File previews
@@ -313,8 +267,14 @@ document.getElementById('fFile').addEventListener('change',function(){
 });
 
 // ========================================
-// POSTS (Bài viết)
+// POSTS — Supabase CRUD
 // ========================================
+async function loadAndRenderPosts(){
+  var result = await supabase.from('posts').select('*').order('created_at',{ascending:false});
+  postsData = result.data || [];
+  renderPostTable();
+}
+
 function renderPostTable(){
   var filtered=postsData.filter(function(p){
     if(currentPostFilter==='published' && p.status!=='published') return false;
@@ -331,21 +291,21 @@ function renderPostTable(){
     return;
   }
   tb.innerHTML=filtered.map(function(p){
+    var cat=p.category_label||CATEGORIES[p.category]||p.category;
+    var date=p.created_at?p.created_at.split('T')[0]:'-';
     var thumbHtml = p.cover
       ? '<img src="'+p.cover+'" alt="" style="width:42px;height:42px;border-radius:10px;object-fit:cover;border:1px solid rgba(15,23,42,.06)">'
       : '<div class="cell-doc-thumb" style="background:var(--cream-dark);color:var(--ink-faint);font-size:1rem"><i class="bi bi-image"></i></div>';
     return '<tr>'
-      +'<td><div class="cell-doc">'
-      +thumbHtml
-      +'<div class="cell-doc-info"><span class="title">'+p.title+'</span><span class="sub">'+p.excerpt.substring(0,50)+'...</span></div>'
+      +'<td><div class="cell-doc">'+thumbHtml
+      +'<div class="cell-doc-info"><span class="title">'+p.title+'</span><span class="sub">'+(p.excerpt||'').substring(0,50)+'...</span></div>'
       +'</div></td>'
-      +'<td>'+(CATEGORIES[p.category]||p.category)+'</td>'
+      +'<td>'+cat+'</td>'
       +'<td>'+p.author+'</td>'
       +'<td><span class="badge-s badge-'+(p.status==='published'?'published':'draft')+'">'
       +(p.status==='published'?'<i class="bi bi-check-circle"></i> Đã đăng':'<i class="bi bi-file-earmark"></i> Nháp')+'</span></td>'
-      +'<td style="font-size:.82rem;color:var(--ink-soft)">'+p.createdAt+'</td>'
+      +'<td style="font-size:.82rem;color:var(--ink-soft)">'+date+'</td>'
       +'<td><div style="display:flex;gap:2px">'
-      +'<button class="btn-icon view" title="Xem" onclick="viewPost('+p.id+')"><i class="bi bi-eye"></i></button>'
       +'<button class="btn-icon edit" title="Sửa" onclick="editPost('+p.id+')"><i class="bi bi-pencil"></i></button>'
       +'<button class="btn-icon del" title="Xoá" onclick="deletePost('+p.id+')"><i class="bi bi-trash3"></i></button>'
       +'</div></td></tr>';
@@ -372,29 +332,43 @@ function resetPostForm(){
   postTags=[];renderTags();
 }
 
-function savePost(status){
+async function savePost(status){
   var title=document.getElementById('pTitle').value.trim();
   var cat=document.getElementById('pCategory').value;
   var author=document.getElementById('pAuthor').value.trim();
   var excerpt=document.getElementById('pExcerpt').value.trim();
   var content=document.getElementById('pContent').innerHTML.trim();
+  var catLabel=document.getElementById('pCategoryLabel');
   if(!title||!cat||!author||!excerpt){toast('Vui lòng điền đầy đủ thông tin bắt buộc!');return;}
   if(status==='published'&&!content){toast('Bài đăng cần có nội dung!');return;}
 
-  // TODO: Backend — POST /api/posts với FormData (pCoverFile)
-  var post={
-    id:editingPostId||postsData.length+1,
-    title:title,category:cat,author:author,excerpt:excerpt,
-    cover:null, // Backend sẽ trả URL ảnh sau khi upload
-    tags:postTags.slice(),status:status,
-    content:content,createdAt:new Date().toISOString().split('T')[0]
+  var postData={
+    title:title, category:cat,
+    category_label:catLabel?catLabel.value||CATEGORIES[cat]||cat:CATEGORIES[cat]||cat,
+    author:author, excerpt:excerpt, tags:postTags.slice(),
+    status:status,
+    author_initials:author.split(' ').map(function(w){return w[0]}).join('').toUpperCase().substring(0,2),
+    author_color:'#1E40AF'
   };
+
+  // Upload cover nếu có
+  var coverFile=document.getElementById('pCoverFile').files[0];
+  if(coverFile){
+    var coverName='cover_'+Date.now()+'.'+coverFile.name.split('.').pop();
+    await Storage.uploadPostImage(coverFile, coverName);
+    postData.cover=Storage.getPostImageUrl(coverName);
+  }
+
   if(editingPostId){
-    var idx=postsData.findIndex(function(p){return p.id===editingPostId});
-    if(idx!==-1){post.cover=postsData[idx].cover;postsData[idx]=post;}
-  }else{postsData.push(post);}
-  renderPostTable();togglePostForm();
-  toast(status==='published'?'Đã đăng bài viết!':'Đã lưu nháp!');
+    await supabase.from('posts').update(postData).eq('id', editingPostId);
+    toast(status==='published'?'Đã cập nhật bài viết!':'Đã lưu nháp!');
+  } else {
+    await supabase.from('posts').insert(postData);
+    toast(status==='published'?'Đã đăng bài viết!':'Đã lưu nháp!');
+  }
+
+  await loadAndRenderPosts();
+  togglePostForm();
   editingPostId=null;
 }
 
@@ -405,11 +379,10 @@ function editPost(id){
   document.getElementById('pTitle').value=post.title;
   document.getElementById('pCategory').value=post.category;
   document.getElementById('pAuthor').value=post.author;
-  document.getElementById('pExcerpt').value=post.excerpt;
+  document.getElementById('pExcerpt').value=post.excerpt||'';
   var catLabel=document.getElementById('pCategoryLabel');
-  if(catLabel) catLabel.value='';
+  if(catLabel) catLabel.value=post.category_label||'';
   document.getElementById('pContent').innerHTML=post.content||'';
-  // Hiện ảnh bìa cũ nếu có
   if(post.cover){
     document.getElementById('pCoverPreview').innerHTML='<img src="'+post.cover+'" alt="Cover">';
   }else{
@@ -423,15 +396,11 @@ function editPost(id){
   f.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function viewPost(id){
-  // TODO: Mở preview bài viết
-  toast('Tính năng xem trước sẽ hoạt động khi có backend');
-}
-
-function deletePost(id){
+async function deletePost(id){
   if(!confirm('Xoá bài viết này?')) return;
-  postsData=postsData.filter(function(p){return p.id!==id});
-  renderPostTable();toast('Đã xoá bài viết');
+  await supabase.from('posts').delete().eq('id', id);
+  await loadAndRenderPosts();
+  toast('Đã xoá bài viết');
 }
 
 // Tags
@@ -471,10 +440,30 @@ function insertLink(){var url=prompt('Nhập URL:');if(url) document.execCommand
 function insertImage(){var url=prompt('Nhập URL ảnh:');if(url) document.execCommand('insertImage',false,url);}
 
 // ========================================
-// ORDERS (Đơn hàng — thanh toán tự động)
+// ORDERS — Supabase
 // ========================================
+async function loadAndRenderOrders(){
+  var result = await supabase.from('orders').select('*').order('created_at',{ascending:false});
+  ordersData = (result.data||[]).map(function(o,i){
+    return {
+      id:'DH'+String(i+1).padStart(3,'0'),
+      orderCode:o.order_code,
+      docTitle:o.doc_title||'Đề #'+o.doc_id,
+      docId:o.doc_id,
+      txCode:o.order_code,
+      amount:o.amount||0,
+      time:o.created_at?new Date(o.created_at).toLocaleString('vi-VN'):'',
+      status:o.status,
+      customerInfo:o.buyer_name||o.buyer_contact||'',
+      txContent:o.order_code,
+      approvedBy:o.approved_by,
+      approvedAt:o.approved_at?new Date(o.approved_at).toLocaleString('vi-VN'):null
+    };
+  });
+  renderOrderTable();
+}
+
 function renderOrderTable(){
-  refreshOrders();
   var filtered=ordersData.filter(function(o){
     if(currentOrderFilter!=='all'&&o.status!==currentOrderFilter) return false;
     if(currentOrderSearch){
@@ -482,8 +471,7 @@ function renderOrderTable(){
       return o.docTitle.toLowerCase().indexOf(q)!==-1
         ||o.txCode.toLowerCase().indexOf(q)!==-1
         ||o.id.toLowerCase().indexOf(q)!==-1
-        ||o.customerInfo.toLowerCase().indexOf(q)!==-1
-        ||o.txContent.toLowerCase().indexOf(q)!==-1;
+        ||o.customerInfo.toLowerCase().indexOf(q)!==-1;
     }
     return true;
   });
@@ -494,29 +482,20 @@ function renderOrderTable(){
   }
   tb.innerHTML=filtered.map(function(o){
     var statusMap={
-      approved:{cls:'badge-done',    label:'<i class="bi bi-check-circle"></i> Đã duyệt'},
-      pending: {cls:'badge-pending', label:'<i class="bi bi-hourglass-split"></i> Chờ duyệt'},
-      rejected:{cls:'badge-cancel',  label:'<i class="bi bi-x-circle"></i> Từ chối'}
+      approved:{cls:'badge-done',label:'<i class="bi bi-check-circle"></i> Đã duyệt'},
+      pending:{cls:'badge-pending',label:'<i class="bi bi-hourglass-split"></i> Chờ duyệt'},
+      rejected:{cls:'badge-cancel',label:'<i class="bi bi-x-circle"></i> Từ chối'}
     };
     var s=statusMap[o.status]||statusMap.pending;
-
-    // Thao tác tuỳ trạng thái
     var actions='';
     if(o.status==='pending'){
-      actions='<button class="btn-teal" style="font-size:.72rem;padding:.25rem .6rem" title="Duyệt đơn" onclick="manualApprove(\''+o.orderCode+'\')">'
-        +'<i class="bi bi-check-lg"></i> Duyệt</button>'
-        +'<button class="btn-icon del" title="Từ chối" onclick="rejectOrder(\''+o.orderCode+'\')">'
-        +'<i class="bi bi-x-lg"></i></button>';
+      actions='<button class="btn-teal" style="font-size:.72rem;padding:.25rem .6rem" onclick="manualApprove(\''+o.orderCode+'\')"><i class="bi bi-check-lg"></i> Duyệt</button>'
+        +'<button class="btn-icon del" onclick="rejectOrder(\''+o.orderCode+'\')"><i class="bi bi-x-lg"></i></button>';
     }else{
-      actions='<button class="btn-icon view" title="Chi tiết" onclick="viewOrder(\''+o.orderCode+'\')"><i class="bi bi-eye"></i></button>';
+      actions='<button class="btn-icon view" onclick="viewOrder(\''+o.orderCode+'\')"><i class="bi bi-eye"></i></button>';
     }
-
-    // Mã đơn + nút copy
-    var txHtml='<span style="font-family:monospace;font-size:.78rem;background:var(--cream-dark);padding:.15rem .5rem;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem" onclick="copyTx(\''+o.txCode+'\')" title="Nhấn để copy">'+o.txCode+' <i class="bi bi-copy" style="font-size:.65rem;opacity:.5"></i></span>';
-
-    // Thông tin khách
-    var custHtml = '<div style="font-weight:600;font-size:.84rem">'+o.customerInfo+'</div>'
-      +'<div style="font-size:.72rem;color:var(--ink-soft);font-family:monospace">CK: '+o.txContent+'</div>';
+    var txHtml='<span style="font-family:monospace;font-size:.78rem;background:var(--cream-dark);padding:.15rem .5rem;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem" onclick="copyTx(\''+o.txCode+'\')">'+o.txCode+' <i class="bi bi-copy" style="font-size:.65rem;opacity:.5"></i></span>';
+    var custHtml='<div style="font-weight:600;font-size:.84rem">'+o.customerInfo+'</div>';
 
     return '<tr'+(o.status==='pending'?' style="background:rgba(247,168,35,.03)"':'')+' >'
       +'<td style="font-weight:600;color:var(--ink-soft);font-size:.78rem">'+o.id+'</td>'
@@ -529,7 +508,6 @@ function renderOrderTable(){
       +'<td><div style="display:flex;gap:2px">'+actions+'</div></td></tr>';
   }).join('');
 
-  // Stats
   var approved=ordersData.filter(function(o){return o.status==='approved'}).length;
   var pending=ordersData.filter(function(o){return o.status==='pending'}).length;
   var rejected=ordersData.filter(function(o){return o.status==='rejected'}).length;
@@ -538,17 +516,11 @@ function renderOrderTable(){
   document.getElementById('statPending').textContent=pending;
   document.getElementById('statExpired').textContent=rejected;
   document.getElementById('statRevenue').textContent=formatK(revenue);
-  // Sidebar badge: chỉ hiện nếu có đơn chờ duyệt
   var badge=document.getElementById('pendingCount');
   if(pending>0){badge.textContent=pending;badge.style.display='';}
   else{badge.style.display='none';}
   document.getElementById('orderPageInfo').textContent='Hiển thị '+filtered.length+' / '+ordersData.length+' đơn hàng';
-
-  // Thông báo nếu có đơn mới
-  if(pending > _lastPendingCount && _lastPendingCount >= 0){
-    if(_lastPendingCount > 0) toast('🔔 Có '+pending+' đơn hàng mới chờ duyệt!');
-  }
-  _lastPendingCount = pending;
+  _lastPendingCount=pending;
 }
 
 function filterOrders(btn,f){
@@ -557,74 +529,49 @@ function filterOrders(btn,f){
 }
 function searchOrders(){currentOrderSearch=document.getElementById('orderSearchInput').value;renderOrderTable();}
 
-// Admin duyệt đơn hàng
-function manualApprove(orderCode){
-  if(!confirm('Duyệt đơn '+orderCode+'?\nBạn đã kiểm tra lịch sử CK ngân hàng và xác nhận tiền đã vào?')) return;
-  // Cập nhật localStorage
-  var orders = loadOrdersFromStorage();
-  for(var i=0;i<orders.length;i++){
-    if(orders[i].orderCode === orderCode){
-      orders[i].status = 'approved';
-      orders[i].approvedBy = 'admin';
-      orders[i].approvedAt = new Date().toLocaleString('vi-VN');
-      break;
-    }
-  }
-  saveOrdersToStorage(orders);
-  renderOrderTable();renderDashboard();
-  toast('✅ Đã duyệt đơn '+orderCode+' — đề mở khoá cho khách tải!');
-}
-function rejectOrder(orderCode){
-  if(!confirm('Từ chối đơn '+orderCode+'?\nChuyển khoản chưa khớp hoặc không thấy tiền?')) return;
-  var orders = loadOrdersFromStorage();
-  for(var i=0;i<orders.length;i++){
-    if(orders[i].orderCode === orderCode){
-      orders[i].status = 'rejected';
-      break;
-    }
-  }
-  saveOrdersToStorage(orders);
-  renderOrderTable();renderDashboard();
-  toast('Đã từ chối đơn '+orderCode);
-}
-function viewOrder(orderCode){
-  var orders = loadOrdersFromStorage();
-  var o = orders.find(function(x){return x.orderCode===orderCode});
-  if(!o){toast('Không tìm thấy đơn '+orderCode); return;}
-  var info = '📋 Chi tiết đơn hàng\n\n'
-    +'Mã: '+o.orderCode+'\n'
-    +'Đề: '+o.docTitle+'\n'
-    +'Khách: '+o.customerInfo+'\n'
-    +'Nội dung CK: '+o.txContent+'\n'
-    +'Số tiền: '+(o.amount?o.amount.toLocaleString('vi-VN')+'đ':'Miễn phí')+'\n'
-    +'Ngày đặt: '+o.createdAt+'\n'
-    +'Trạng thái: '+(o.status==='approved'?'Đã duyệt':(o.status==='rejected'?'Từ chối':'Chờ duyệt'))+'\n'
-    +(o.approvedAt?'Ngày duyệt: '+o.approvedAt:'');
-  alert(info);
-}
-function copyTx(code){
-  navigator.clipboard.writeText(code).then(function(){toast('Đã copy: '+code);}).catch(function(){toast(code);});
+async function manualApprove(orderCode){
+  if(!confirm('Duyệt đơn '+orderCode+'?\nĐã kiểm tra lịch sử CK ngân hàng?')) return;
+  await supabase.from('orders').update({
+    status:'approved', approved_by:'admin', approved_at:new Date().toISOString()
+  }).eq('order_code', orderCode);
+  await loadAndRenderOrders();
+  renderDashboard();
+  toast('✅ Đã duyệt đơn '+orderCode);
 }
 
-function exportOrders(){
-  // TODO: Backend — GET /api/orders/export
-  toast('Tính năng xuất CSV sẽ hoạt động khi có backend');
+async function rejectOrder(orderCode){
+  if(!confirm('Từ chối đơn '+orderCode+'?')) return;
+  await supabase.from('orders').update({status:'rejected'}).eq('order_code', orderCode);
+  await loadAndRenderOrders();
+  renderDashboard();
+  toast('Đã từ chối đơn '+orderCode);
+}
+
+function viewOrder(orderCode){
+  var o=ordersData.find(function(x){return x.orderCode===orderCode});
+  if(!o){toast('Không tìm thấy đơn'); return;}
+  alert('📋 Chi tiết đơn hàng\n\nMã: '+o.orderCode+'\nĐề: '+o.docTitle+'\nKhách: '+o.customerInfo
+    +'\nSố tiền: '+(o.amount?o.amount.toLocaleString('vi-VN')+'đ':'Miễn phí')
+    +'\nNgày đặt: '+o.time+'\nTrạng thái: '+(o.status==='approved'?'Đã duyệt':o.status==='rejected'?'Từ chối':'Chờ duyệt')
+    +(o.approvedAt?'\nNgày duyệt: '+o.approvedAt:''));
+}
+
+function copyTx(code){
+  navigator.clipboard.writeText(code).then(function(){toast('Đã copy: '+code);}).catch(function(){toast(code);});
 }
 
 // ========================================
 // SETTINGS
 // ========================================
-function saveSettings(section){
-  // TODO: Backend — PUT /api/settings/bank
-  toast('Đã lưu thông tin ngân hàng!');
-}
+function saveSettings(section){toast('Đã lưu thông tin ngân hàng!');}
 
 // ========================================
-// DASHBOARD
+// DASHBOARD — Supabase
 // ========================================
-function renderDashboard(){
-  refreshOrders();
-  // Đơn chờ duyệt — hiện khi có đơn cần xử lý
+async function renderDashboard(){
+  if(!docsData.length) docsData = await DB.getDocs();
+  if(!ordersData.length) await loadAndRenderOrders();
+
   var stuck=ordersData.filter(function(o){return o.status==='pending'});
   var el=document.getElementById('dashPendingOrders');
   if(!stuck.length){
@@ -633,15 +580,9 @@ function renderDashboard(){
     el.innerHTML=stuck.map(function(o){
       return '<div class="dash-list-item" style="background:rgba(247,168,35,.03)">'
         +'<div style="flex:1;min-width:0">'
-          +'<div style="font-weight:600;font-size:.88rem">'+o.docTitle+'</div>'
-          +'<div style="font-size:.76rem;color:var(--ink-soft)">'
-            +'<span style="font-weight:600;color:var(--ink)">'+o.customerInfo+'</span>'
-            +' · '+formatK(o.amount)
-          +'</div>'
-          +'<div style="font-size:.72rem;color:var(--ink-faint);margin-top:.15rem">'
-            +'CK: <span style="font-family:monospace;background:var(--cream-dark);padding:.1rem .4rem;border-radius:4px;font-size:.72rem">'+o.txContent+'</span>'
-            +' · '+o.time
-          +'</div>'
+        +'<div style="font-weight:600;font-size:.88rem">'+o.docTitle+'</div>'
+        +'<div style="font-size:.76rem;color:var(--ink-soft)"><span style="font-weight:600;color:var(--ink)">'+o.customerInfo+'</span> · '+formatK(o.amount)+'</div>'
+        +'<div style="font-size:.72rem;color:var(--ink-faint);margin-top:.15rem">CK: <span style="font-family:monospace;background:var(--cream-dark);padding:.1rem .4rem;border-radius:4px;font-size:.72rem">'+o.txContent+'</span> · '+o.time+'</div>'
         +'</div>'
         +'<div style="display:flex;gap:4px">'
         +'<button class="btn-teal" style="font-size:.72rem;padding:.25rem .6rem" onclick="manualApprove(\''+o.orderCode+'\');renderDashboard()"><i class="bi bi-check-lg"></i> Duyệt</button>'
@@ -650,7 +591,6 @@ function renderDashboard(){
     }).join('');
   }
 
-  // Recent docs
   var recent=docsData.slice(-5).reverse();
   var el2=document.getElementById('dashRecentDocs');
   if(!recent.length){
@@ -666,25 +606,16 @@ function renderDashboard(){
     }).join('');
   }
 
-  // Update stat counts
   document.getElementById('statDocs').textContent=docsData.length;
   var approvedCount=ordersData.filter(function(o){return o.status==='approved'}).length;
   document.getElementById('statOrders').textContent=approvedCount;
 }
 
-// Auto-refresh đơn hàng mỗi 10 giây (kiểm tra localStorage cập nhật)
-setInterval(function(){
-  var current=ordersData.length;
-  refreshOrders();
-  if(ordersData.length!==current){
-    renderOrderTable();renderDashboard();
-  }
-  // Kiểm tra nếu có đơn pending mới
-  var newPending=ordersData.filter(function(o){return o.status==='pending'}).length;
-  if(newPending > _lastPendingCount){
-    renderOrderTable();renderDashboard();
-  }
-},10000);
+// Auto-refresh đơn hàng mỗi 30 giây
+setInterval(async function(){
+  await loadAndRenderOrders();
+  renderDashboard();
+}, 30000);
 
 // ========================================
 // UTILS
@@ -696,81 +627,11 @@ function formatK(n){
 }
 
 // ========================================
-// INIT
+// INIT — Load từ Supabase
 // ========================================
-loadDocsData();
-renderPostTable();
-renderOrderTable();
-
-/* ============ REPORTS ============ */
-function renderReports(){
-  var reports = JSON.parse(localStorage.getItem('got_reports')||'[]');
-  var tbody = document.getElementById('reportTableBody');
-  var empty = document.getElementById('reportEmpty');
-  var badge = document.getElementById('reportCount');
-  if(!tbody) return;
-
-  var pending = 0, done = 0;
-  reports.forEach(function(r){ if(r.status==='pending') pending++; else done++; });
-
-  if(document.getElementById('statReportPending')) document.getElementById('statReportPending').textContent = pending;
-  if(document.getElementById('statReportDone')) document.getElementById('statReportDone').textContent = done;
-  if(document.getElementById('statReportTotal')) document.getElementById('statReportTotal').textContent = reports.length;
-  if(badge){ badge.textContent = pending; badge.style.display = pending > 0 ? '' : 'none'; }
-
-  if(reports.length === 0){
-    tbody.innerHTML = '';
-    if(empty) empty.style.display = '';
-    return;
-  }
-  if(empty) empty.style.display = 'none';
-
-  var html = '';
-  for(var i = reports.length - 1; i >= 0; i--){
-    var r = reports[i];
-    var time = new Date(r.time).toLocaleString('vi-VN');
-    var statusHtml = r.status === 'pending'
-      ? '<span style="background:#FEF3C7;color:#92400E;font-size:.75rem;font-weight:700;padding:.2rem .6rem;border-radius:50px">Chờ xử lý</span>'
-      : '<span style="background:#ECFDF5;color:#065F46;font-size:.75rem;font-weight:700;padding:.2rem .6rem;border-radius:50px">Đã xử lý</span>';
-    var actions = r.status === 'pending'
-      ? '<button class="btn-action-c" style="color:#059669" onclick="resolveReport('+r.id+')"><i class="bi bi-check-lg"></i> Xử lý</button>'
-        +'<button class="btn-action-c" style="color:#EF4444" onclick="deleteReport('+r.id+')"><i class="bi bi-trash3"></i></button>'
-      : '<button class="btn-action-c" style="color:#EF4444" onclick="deleteReport('+r.id+')"><i class="bi bi-trash3"></i> Xóa</button>';
-
-    html += '<tr>'
-      +'<td style="font-size:.82rem;white-space:nowrap">'+time+'</td>'
-      +'<td><code style="background:#F1F5F9;padding:.2rem .4rem;border-radius:4px;font-size:.8rem">'+(r.orderCode||'—')+'</code></td>'
-      +'<td><span style="background:#FEF2F2;color:#DC2626;font-size:.75rem;font-weight:600;padding:.2rem .5rem;border-radius:6px">'+r.type+'</span></td>'
-      +'<td style="font-weight:600;font-size:.85rem">'+r.contact+'</td>'
-      +'<td style="font-size:.85rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r.desc||'—')+'</td>'
-      +'<td>'+statusHtml+'</td>'
-      +'<td>'+actions+'</td>'
-    +'</tr>';
-  }
-  tbody.innerHTML = html;
-}
-
-function resolveReport(id){
-  var reports = JSON.parse(localStorage.getItem('got_reports')||'[]');
-  for(var i=0;i<reports.length;i++){
-    if(reports[i].id === id){ reports[i].status = 'resolved'; break; }
-  }
-  localStorage.setItem('got_reports', JSON.stringify(reports));
-  renderReports();
-}
-
-function deleteReport(id){
-  if(!confirm('Xóa báo cáo này?')) return;
-  var reports = JSON.parse(localStorage.getItem('got_reports')||'[]');
-  reports = reports.filter(function(r){ return r.id !== id; });
-  localStorage.setItem('got_reports', JSON.stringify(reports));
-  renderReports();
-}
-
-function clearResolvedReports(){
-  if(!confirm('Xóa tất cả báo cáo đã xử lý?')) return;
-  var reports = JSON.parse(localStorage.getItem('got_reports')||'[]');
-  reports = reports.filter(function(r){ return r.status === 'pending'; });
-  localStorage.setItem('got_reports', JSON.stringify(reports));
-  renderReports();
-}
+(async function(){
+  await loadAndRenderDocs();
+  await loadAndRenderPosts();
+  await loadAndRenderOrders();
+  renderDashboard();
+})();
