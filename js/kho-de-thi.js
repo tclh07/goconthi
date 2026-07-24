@@ -69,7 +69,9 @@ function renderCard(doc){
     +'<div class="dc2-title"><a href="chi-tiet-de.html?id='+doc.id+'">'+doc.title+'</a></div>'
     +'<div class="dc2-meta"><span><i class="bi '+(doc.icon||'bi-file-earmark-text')+'"></i> '+subName+'</span><span class="dc2-meta-sep">·</span><span>'+qInfo+'</span><span class="dc2-meta-sep">·</span><span>'+doc.year+'</span></div>'
     +'<div class="dc2-foot">'
-    +'<div class="dc2-stats"><span class="dc2-stat"><i class="bi bi-download"></i> '+dl+'</span><span class="dc2-stat"><i class="bi bi-star-fill"></i> '+doc.rating+'</span></div>'
+    +'<div class="dc2-stats"><span class="dc2-stat"><i class="bi bi-download"></i> '+dl+'</span><span class="dc2-stat"><i class="bi bi-star-fill"></i> '+doc.rating+'</span>'
+    +'<button class="dc2-stat dc2-preview-btn" onclick="event.preventDefault();event.stopPropagation();openPreviewModal('+doc.id+')" title="Xem trước"><i class="bi bi-eye"></i></button>'
+    +'</div>'
     +'<div class="dc2-price">'+priceHtml+btnHtml+'</div>'
     +'</div></div></div></div>';
 }
