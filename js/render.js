@@ -15,7 +15,7 @@ var FORMAT_ICON = {
 };
 
 /* ============================================================
-   CẤU HÌNH THANH TOÁN — Duyệt thủ công qua Admin
+   CẤU HÌNH THANH TOÁN — Đọc từ Supabase
    ============================================================ */
 var PAY_CONFIG = {
   bankName: 'Vietcombank (VCB)',
@@ -23,6 +23,21 @@ var PAY_CONFIG = {
   accountNo: '1234567890',
   accountOwner: 'NGUYEN VAN A'
 };
+
+/* Load cấu hình ngân hàng từ database */
+(async function loadPayConfig(){
+  try {
+    var result = await supabase.from('site_settings').select('*');
+    if(result.data){
+      result.data.forEach(function(row){
+        if(row.key === 'bank_name') PAY_CONFIG.bankName = row.value;
+        if(row.key === 'bank_code') PAY_CONFIG.bankCode = row.value;
+        if(row.key === 'bank_account') PAY_CONFIG.accountNo = row.value;
+        if(row.key === 'bank_owner') PAY_CONFIG.accountOwner = row.value;
+      });
+    }
+  } catch(e){ console.warn('Load pay config:', e); }
+})();
 
 /* ============================================================
    HỆ THỐNG ĐƠN HÀNG — localStorage
