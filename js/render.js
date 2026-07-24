@@ -538,7 +538,7 @@ function renderAlreadyPurchasedModal(doc){
    XÁC NHẬN ĐÃ CHUYỂN KHOẢN — Hiệu ứng "nhìn như thật"
    Spinner → "Đang kiểm tra" → "Đang xử lý" → chờ admin duyệt
    ============================================================ */
-function submitPaymentConfirm(docId, orderCode, amount){
+async function submitPaymentConfirm(docId, orderCode, amount){
   var info = document.getElementById('dmCustInfo').value.trim();
   var txContent = document.getElementById('dmCustTxContent').value.trim();
 
@@ -559,7 +559,7 @@ function submitPaymentConfirm(docId, orderCode, amount){
     approvedAt: null
   };
 
-  OrderStore.add(order);
+  await OrderStore.add(order);
 
   // Ẩn form, dừng đếm ngược
   var form = document.getElementById('dmConfirmSection');
@@ -617,33 +617,47 @@ function submitPaymentConfirm(docId, orderCode, amount){
   startApprovalCheck(orderCode, docId);
 }
 
-/* Kiểm tra liên tục xem admin đã duyệt chưa */
+/* Kiểm tra liên tục xem admin đã duyệt chưa — Supabase async */
 var _approvalCheckTimer = null;
 function startApprovalCheck(orderCode, docId){
   if(_approvalCheckTimer) clearInterval(_approvalCheckTimer);
-  _approvalCheckTimer = setInterval(function(){
-    var order = OrderStore.findByCode(orderCode);
-    if(order && order.status === 'approved'){
-      clearInterval(_approvalCheckTimer);
-      _approvalCheckTimer = null;
-      // Hiện thành công!
-      var checking = document.getElementById('dmStatusChecking');
-      var processing = document.getElementById('dmStatusProcessing');
-      var success = document.getElementById('dmStatusSuccess');
-      var dlBtn = document.getElementById('dmDownloadBtn');
-      if(checking) checking.style.display = 'none';
-      if(processing) processing.style.display = 'none';
-      if(success) success.style.display = '';
-      if(dlBtn) dlBtn.style.display = '';
+  _approvalCheckTimer = setInterval(async function(){
+    try {
+      var order = await OrderStore.findByCode(orderCode);
+      if(order && order.status === 'approved'){
+        clearInterval(_approvalCheckTimer);
+        _approvalCheckTimer = null;
 
-      // Steps: tất cả done
-      ['dmStep1','dmStep2','dmStep3'].forEach(function(id){
-        var el = document.getElementById(id);
-        if(el){ el.classList.add('done'); el.classList.remove('active'); }
-      });
+        // Hiện thành công
+        var checking = document.getElementById('dmStatusChecking');
+        var processing = document.getElementById('dmStatusProcessing');
+        var success = document.getElementById('dmStatusSuccess');
+        var dlBtn = document.getElementById('dmDownloadBtn');
+        if(checking) checking.style.display = 'none';
+        if(processing) processing.style.display = 'none';
+        if(success) success.style.display = '';
+        if(dlBtn){
+          dlBtn.style.display = '';
+          // Nếu có file_url thì gắn link tải thật
+          var doc = findDocById(docId);
+          if(doc && doc.file_url){
+            dlBtn.onclick = async function(){
+              var url = await Storage.getDocumentUrl(doc.file_url);
+              if(url) window.open(url, '_blank');
+              else showToast('File đang chuẩn bị, vui lòng thử lại sau.');
+            };
+          }
+        }
 
-      showToast('🎉 Đề thi đã mở khoá! Bấm tải ngay.');
-    }
+        // Steps: tất cả done
+        ['dmStep1','dmStep2','dmStep3'].forEach(function(id){
+          var el = document.getElementById(id);
+          if(el){ el.classList.add('done'); el.classList.remove('active'); }
+        });
+
+        showToast('🎉 Đề thi đã mở khoá! Bấm tải ngay.');
+      }
+    } catch(e){ console.warn('Approval check:', e); }
   }, 5000);
 }
 
