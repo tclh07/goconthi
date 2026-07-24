@@ -448,6 +448,7 @@ function renderPremiumDocModal(doc, orderCode){
         +'<div class="dm-pay-row"><span>Ngân hàng</span><span class="fw-semibold">'+PAY_CONFIG.bankName+'</span></div>'
         +'<div class="dm-pay-row"><span>Số tiền</span><span style="color:var(--coral);font-weight:700">'+priceVnd+'</span></div>'
         +'<div class="dm-pay-row dm-pay-row-hl"><span>Nội dung CK</span><span style="color:var(--teal);font-weight:600"><i class="bi bi-qr-code-scan"></i> Tự động khi quét QR</span></div>'
+      +'</div>'
       /* FORM XÁC NHẬN ĐÃ CK */
       +'<div class="dm-confirm-section" id="dmConfirmSection">'
         +'<div class="dm-confirm-title"><i class="bi bi-send-check"></i> Đã chuyển khoản? Xác nhận tại đây</div>'
@@ -496,10 +497,9 @@ function renderPremiumDocModal(doc, orderCode){
       +'</div>'
       /* Nút tải — ẩn ban đầu */
       +'<div class="dm-download-after-pay" id="dmDownloadBtn" style="display:none">'
-        +'<a href="'+(doc.downloadUrl||'#')+'" id="dmDownloadLink" class="pm-btn pm-btn-primary" style="width:100%;justify-content:center;padding:.8rem" '
-          +(doc.downloadUrl?'download':'onclick="alert(\'File sẽ được gửi qua Zalo/Email khi có backend!\')"')+'>'
+        +'<button id="dmDownloadLink" class="pm-btn pm-btn-primary" style="width:100%;justify-content:center;padding:.8rem" onclick="downloadDoc('+doc.id+')">'
           +'<i class="bi bi-download"></i> Tải xuống đề thi'
-        +'</a>'
+        +'</button>'
       +'</div>'
       /* Nút tra cứu */
       +'<div class="dm-lookup-link">'
@@ -659,6 +659,19 @@ function startApprovalCheck(orderCode, docId){
       }
     } catch(e){ console.warn('Approval check:', e); }
   }, 5000);
+}
+
+/* Tải file đề thi từ Supabase Storage */
+async function downloadDoc(docId){
+  var doc = findDocById(docId);
+  if(!doc){ showToast('Không tìm thấy đề thi'); return; }
+  if(doc.file_url){
+    try {
+      var url = await Storage.getDocumentUrl(doc.file_url);
+      if(url){ window.open(url, '_blank'); return; }
+    } catch(e){ console.warn('Download:', e); }
+  }
+  showToast('File đề thi đang được chuẩn bị. Admin sẽ gửi qua Zalo/Email sớm nhất!');
 }
 
 /* ============================================================
