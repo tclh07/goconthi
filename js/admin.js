@@ -70,6 +70,7 @@ function showTab(tab){
   if(tab==='posts') loadAndRenderPosts();
   if(tab==='orders') loadAndRenderOrders();
   if(tab==='dashboard') renderDashboard();
+  if(tab==='settings') loadSettings();
 }
 document.querySelectorAll('.sb-nav a').forEach(function(a){
   a.addEventListener('click',function(e){
@@ -561,9 +562,45 @@ function copyTx(code){
 }
 
 // ========================================
-// SETTINGS
+// SETTINGS — Supabase
 // ========================================
-function saveSettings(section){toast('Đã lưu thông tin ngân hàng!');}
+var BANK_CODES = {
+  'Vietcombank (VCB)':'VCB','Techcombank (TCB)':'TCB','MB Bank (MB)':'MB',
+  'BIDV':'BIDV','Agribank':'AGR','VPBank':'VPB','ACB':'ACB',
+  'Sacombank (STB)':'STB','TPBank':'TPB','VietinBank (CTG)':'ICB',
+  'SHB':'SHB','HDBank':'HDB','OCB':'OCB','MSB':'MSB',
+  'LienVietPostBank':'LPB','SeABank':'SSB','BacABank':'BAB',
+  'VIB':'VIB','Eximbank':'EIB','NamABank':'NAB','PGBank':'PGB'
+};
+
+async function loadSettings(){
+  try {
+    var result = await supabase.from('site_settings').select('*');
+    if(result.data){
+      result.data.forEach(function(row){
+        if(row.key==='bank_name'){var el=document.getElementById('sBankName');if(el)el.value=row.value;}
+        if(row.key==='bank_account'){var el=document.getElementById('sBankAccount');if(el)el.value=row.value;}
+        if(row.key==='bank_owner'){var el=document.getElementById('sBankOwner');if(el)el.value=row.value;}
+      });
+    }
+  } catch(e){ console.warn('Load settings:', e); }
+}
+
+async function saveSettings(section){
+  var bankName=(document.getElementById('sBankName')||{}).value||'';
+  var bankAccount=(document.getElementById('sBankAccount')||{}).value||'';
+  var bankOwner=(document.getElementById('sBankOwner')||{}).value||'';
+  if(!bankName||!bankAccount||!bankOwner){toast('Vui lòng điền đầy đủ thông tin!');return;}
+
+  var bankCode=BANK_CODES[bankName]||bankName.match(/\((\w+)\)/)?.[1]||'VCB';
+
+  await supabase.from('site_settings').upsert({key:'bank_name',value:bankName});
+  await supabase.from('site_settings').upsert({key:'bank_code',value:bankCode});
+  await supabase.from('site_settings').upsert({key:'bank_account',value:bankAccount.replace(/\s/g,'')});
+  await supabase.from('site_settings').upsert({key:'bank_owner',value:bankOwner.toUpperCase()});
+
+  toast('Đã lưu thông tin ngân hàng!');
+}
 
 // ========================================
 // DASHBOARD — Supabase
