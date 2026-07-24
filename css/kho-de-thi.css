@@ -188,3 +188,7 @@
   .fb-sep { display: none; }
   .hero-stats { display: none; }
 }
+
+/* Preview eye button on card */
+.dc2-preview-btn{background:none;border:none;cursor:pointer;color:var(--ink-faint);padding:0 .2rem;font-size:.82rem;transition:.2s}
+.dc2-preview-btn:hover{color:var(--coral)}
