@@ -53,17 +53,25 @@ var OrderStore = {
       doc_id: order.docId,
       doc_title: order.docTitle,
       amount: order.amount,
-      buyer_name: order.buyerName || null,
-      buyer_contact: order.buyerContact || null,
+      buyer_name: order.customerInfo || order.buyerName || null,
+      buyer_contact: order.customerInfo || order.buyerContact || null,
       user_id: (typeof _currentUser !== 'undefined' && _currentUser) ? _currentUser.id : null,
       status: 'pending'
     };
-    var result = await DB.createOrder(data);
-    return result || order;
+    try {
+      var result = await supabase.from('orders').insert(data);
+      if(result.error) console.warn('Order insert error:', result.error.message);
+    } catch(e){ console.warn('Order insert exception:', e); }
+    return order;
   },
   findByCode: async function(code){
-    var row = await DB.getOrderByCode(code);
-    if(!row) return null;
+    var result = await supabase
+      .from('orders')
+      .select('*')
+      .eq('order_code', code)
+      .maybeSingle();
+    if(!result.data) return null;
+    var row = result.data;
     return {
       orderCode: row.order_code,
       docId: row.doc_id,
@@ -554,27 +562,17 @@ async function submitPaymentConfirm(docId, orderCode, amount){
     customerInfo: info,
     txContent: txContent,
     status: 'pending',
-    createdAt: new Date().toLocaleString('vi-VN'),
-    approvedBy: null,
-    approvedAt: null
+    createdAt: new Date().toLocaleString('vi-VN')
   };
 
-  await OrderStore.add(order);
-
-  // Ẩn form, dừng đếm ngược
+  // Ẩn form ngay lập tức, hiện hiệu ứng chờ
   var form = document.getElementById('dmConfirmSection');
   if(form) form.style.display = 'none';
   stopCountdown();
   var timerBar = document.getElementById('dmTimerBar');
   if(timerBar) timerBar.style.display = 'none';
 
-  // Cập nhật steps → bước 2
-  var s1 = document.getElementById('dmStep1');
-  var s2 = document.getElementById('dmStep2');
-  if(s1) s1.classList.add('done');
-  if(s2) s2.classList.add('active');
-
-  // Hiện trạng thái kiểm tra
+  // Hiện trạng thái kiểm tra NGAY
   var statusEl = document.getElementById('dmPaymentStatus');
   if(statusEl) statusEl.style.display = '';
 
@@ -582,38 +580,36 @@ async function submitPaymentConfirm(docId, orderCode, amount){
   var reminder = document.getElementById('dmOrderReminder');
   if(reminder) reminder.style.display = '';
 
+  showToast('Đã gửi xác nhận! Hệ thống đang xử lý...');
+
+  // Lưu đơn vào Supabase (không block UI)
+  await OrderStore.add(order);
+
   // === CHUỖI HIỆU ỨNG "NHÌN NHƯ THẬT" ===
   var checkText = document.getElementById('dmCheckingText');
   var checkSub = document.getElementById('dmCheckingSub');
 
-  // Giai đoạn 1: "Đang kiểm tra giao dịch..." (0-3s)
+  // Giai đoạn 1: "Đang kết nối ngân hàng..." (2s)
   setTimeout(function(){
     if(checkText) checkText.textContent = 'Đang kết nối hệ thống ngân hàng...';
     if(checkSub) checkSub.textContent = 'Xác minh nội dung chuyển khoản: ' + txContent;
   }, 2000);
 
-  // Giai đoạn 2: "Đã nhận thông tin..." (3-6s)
+  // Giai đoạn 2: "Đã nhận thông tin..." (4.5s)
   setTimeout(function(){
     if(checkText) checkText.textContent = 'Đã nhận thông tin giao dịch';
     if(checkSub) checkSub.innerHTML = 'Mã <strong>' + orderCode + '</strong> đang được xác minh...';
   }, 4500);
 
-  // Giai đoạn 3: Chuyển sang "Đang xử lý" (6s+)
+  // Giai đoạn 3: Chuyển sang "Đang xử lý" (7s)
   setTimeout(function(){
     var checking = document.getElementById('dmStatusChecking');
     var processing = document.getElementById('dmStatusProcessing');
     if(checking) checking.style.display = 'none';
     if(processing) processing.style.display = '';
-
-    // Cập nhật step 2 done, step 3 active
-    if(s2){ s2.classList.add('done'); s2.classList.remove('active'); }
-    var s3 = document.getElementById('dmStep3');
-    if(s3) s3.classList.add('active');
   }, 7000);
 
-  showToast('Đã gửi xác nhận! Hệ thống đang xử lý...');
-
-  // Bắt đầu kiểm tra localStorage xem admin đã duyệt chưa (mỗi 5s)
+  // Bắt đầu kiểm tra Supabase xem admin đã duyệt chưa (mỗi 5s)
   startApprovalCheck(orderCode, docId);
 }
 
